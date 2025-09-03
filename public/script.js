@@ -40,11 +40,14 @@ class RPSGame {
         this.disableButtons();
         
         try {
+            const headers = {
+                'Content-Type': 'application/json',
+                ...window.authManager.getAuthHeaders()
+            };
+
             const response = await fetch('/api/play', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers,
                 body: JSON.stringify({ playerChoice })
             });
             
@@ -207,6 +210,291 @@ class RPSGame {
     }
 }
 
+class AuthManager {
+    constructor() {
+        this.token = localStorage.getItem('authToken');
+        this.user = null;
+        this.bindEvents();
+        this.checkAuthStatus();
+    }
+
+    bindEvents() {
+        // 모달 열기/닫기
+        document.getElementById('login-btn').addEventListener('click', () => {
+            this.showModal('login-modal');
+        });
+
+        document.getElementById('register-btn').addEventListener('click', () => {
+            this.showModal('register-modal');
+        });
+
+        document.getElementById('stats-btn').addEventListener('click', () => {
+            this.loadStats();
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            this.logout();
+        });
+
+        // 모달 닫기
+        document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', (e) => {
+                const modal = e.target.closest('.modal');
+                this.hideModal(modal.id);
+            });
+        });
+
+        // 모달 외부 클릭시 닫기
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.hideModal(modal.id);
+                }
+            });
+        });
+
+        // 폼 전환
+        document.getElementById('switch-to-register').addEventListener('click', () => {
+            this.hideModal('login-modal');
+            this.showModal('register-modal');
+        });
+
+        document.getElementById('switch-to-login').addEventListener('click', () => {
+            this.hideModal('register-modal');
+            this.showModal('login-modal');
+        });
+
+        // 폼 제출
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            this.handleLogin(e);
+        });
+
+        document.getElementById('register-form').addEventListener('submit', (e) => {
+            this.handleRegister(e);
+        });
+    }
+
+    showModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.style.display = 'block';
+        this.clearErrors();
+        this.clearForms();
+    }
+
+    hideModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.style.display = 'none';
+    }
+
+    clearErrors() {
+        document.querySelectorAll('.error-message').forEach(error => {
+            error.style.display = 'none';
+            error.textContent = '';
+        });
+    }
+
+    clearForms() {
+        document.querySelectorAll('form').forEach(form => {
+            form.reset();
+        });
+    }
+
+    showError(errorElementId, message) {
+        const errorElement = document.getElementById(errorElementId);
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+
+    async handleLogin(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const loginData = {
+            username: formData.get('username'),
+            password: formData.get('password')
+        };
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(loginData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.token = data.token;
+                this.user = data.user;
+                localStorage.setItem('authToken', this.token);
+                this.updateUI();
+                this.hideModal('login-modal');
+            } else {
+                this.showError('login-error', data.message);
+            }
+        } catch (error) {
+            console.error('로그인 오류:', error);
+            this.showError('login-error', '로그인 처리 중 오류가 발생했습니다.');
+        }
+    }
+
+    async handleRegister(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const registerData = {
+            username: formData.get('username'),
+            email: formData.get('email'),
+            password: formData.get('password')
+        };
+
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(registerData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.token = data.token;
+                this.user = data.user;
+                localStorage.setItem('authToken', this.token);
+                this.updateUI();
+                this.hideModal('register-modal');
+            } else {
+                if (data.errors) {
+                    const errorMessage = data.errors.map(err => err.msg).join('\n');
+                    this.showError('register-error', errorMessage);
+                } else {
+                    this.showError('register-error', data.message);
+                }
+            }
+        } catch (error) {
+            console.error('회원가입 오류:', error);
+            this.showError('register-error', '회원가입 처리 중 오류가 발생했습니다.');
+        }
+    }
+
+    async checkAuthStatus() {
+        if (!this.token) {
+            this.updateUI();
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/auth/me', {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.user = data.user;
+            } else {
+                this.logout();
+                return;
+            }
+        } catch (error) {
+            console.error('인증 상태 확인 오류:', error);
+            this.logout();
+            return;
+        }
+
+        this.updateUI();
+    }
+
+    async loadStats() {
+        if (!this.token) return;
+
+        try {
+            const response = await fetch('/api/stats', {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.displayStats(data.stats, data.recentGames);
+                this.showModal('stats-modal');
+            } else {
+                alert('통계 정보를 불러올 수 없습니다.');
+            }
+        } catch (error) {
+            console.error('통계 로드 오류:', error);
+            alert('통계 정보를 불러오는 중 오류가 발생했습니다.');
+        }
+    }
+
+    displayStats(stats, recentGames) {
+        document.getElementById('total-games').textContent = stats.totalGames;
+        document.getElementById('win-rate').textContent = stats.winRate + '%';
+        document.getElementById('total-wins').textContent = stats.wins;
+        document.getElementById('total-losses').textContent = stats.losses;
+
+        const recentGamesList = document.getElementById('recent-games-list');
+        recentGamesList.innerHTML = '';
+
+        recentGames.forEach(game => {
+            const gameDiv = document.createElement('div');
+            gameDiv.className = `recent-game-item ${game.result}`;
+            
+            const resultText = {
+                win: '승리',
+                lose: '패배',
+                draw: '무승부'
+            };
+
+            const choiceEmojis = {
+                rock: '✊',
+                paper: '✋',
+                scissors: '✌️'
+            };
+
+            gameDiv.innerHTML = `
+                <span>
+                    ${choiceEmojis[game.player_choice]} vs ${choiceEmojis[game.computer_choice]}
+                </span>
+                <span>${resultText[game.result]}</span>
+            `;
+            
+            recentGamesList.appendChild(gameDiv);
+        });
+    }
+
+    logout() {
+        this.token = null;
+        this.user = null;
+        localStorage.removeItem('authToken');
+        this.updateUI();
+    }
+
+    updateUI() {
+        const userInfo = document.getElementById('user-info');
+        const authButtons = document.getElementById('auth-buttons');
+        const usernameDisplay = document.getElementById('username-display');
+
+        if (this.user) {
+            userInfo.style.display = 'flex';
+            authButtons.style.display = 'none';
+            usernameDisplay.textContent = `👋 ${this.user.username}`;
+        } else {
+            userInfo.style.display = 'none';
+            authButtons.style.display = 'flex';
+        }
+    }
+
+    getAuthHeaders() {
+        return this.token ? { 'Authorization': `Bearer ${this.token}` } : {};
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    window.authManager = new AuthManager();
     new RPSGame();
 });

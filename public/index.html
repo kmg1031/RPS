@@ -10,15 +10,29 @@
     <div class="container">
         <header>
             <h1>🎯 가위바위보 게임</h1>
-            <div class="game-mode-menu">
-                <button id="pve-mode" class="mode-btn active">
-                    <span class="mode-icon">🤖</span>
-                    <span>PvE</span>
-                </button>
-                <button id="pvp-mode" class="mode-btn">
-                    <span class="mode-icon">👥</span>
-                    <span>PvP</span>
-                </button>
+            <div class="header-controls">
+                <div class="game-mode-menu">
+                    <button id="pve-mode" class="mode-btn active">
+                        <span class="mode-icon">🤖</span>
+                        <span>PvE</span>
+                    </button>
+                    <button id="pvp-mode" class="mode-btn">
+                        <span class="mode-icon">👥</span>
+                        <span>PvP</span>
+                    </button>
+                </div>
+                
+                <div class="auth-menu">
+                    <div id="user-info" class="user-info" style="display: none;">
+                        <span id="username-display"></span>
+                        <button id="stats-btn" class="auth-btn">📊 통계</button>
+                        <button id="logout-btn" class="auth-btn">로그아웃</button>
+                    </div>
+                    <div id="auth-buttons" class="auth-buttons">
+                        <button id="login-btn" class="auth-btn">로그인</button>
+                        <button id="register-btn" class="auth-btn primary">회원가입</button>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -73,6 +87,108 @@
         <div class="game-history">
             <h3>게임 기록</h3>
             <div id="history-list"></div>
+        </div>
+    </div>
+
+    <!-- 로그인 모달 -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>로그인</h2>
+                <span class="close" id="login-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">사용자명</label>
+                        <input type="text" id="login-username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">비밀번호</label>
+                        <input type="password" id="login-password" name="password" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn">로그인</button>
+                        <button type="button" class="switch-btn" id="switch-to-register">
+                            계정이 없으신가요? 회원가입
+                        </button>
+                    </div>
+                </form>
+                <div id="login-error" class="error-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 회원가입 모달 -->
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>회원가입</h2>
+                <span class="close" id="register-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-username">사용자명</label>
+                        <input type="text" id="register-username" name="username" required
+                               pattern="[a-zA-Z0-9_]+" title="영문, 숫자, 밑줄만 사용 가능합니다">
+                        <small>3-20자, 영문, 숫자, 밑줄만 사용 가능</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">이메일</label>
+                        <input type="email" id="register-email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">비밀번호</label>
+                        <input type="password" id="register-password" name="password" required
+                               pattern="^(?=.*[a-zA-Z])(?=.*\d).{6,}$" title="영문과 숫자를 포함한 6자 이상">
+                        <small>최소 6자, 영문과 숫자 포함</small>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn">회원가입</button>
+                        <button type="button" class="switch-btn" id="switch-to-login">
+                            이미 계정이 있으신가요? 로그인
+                        </button>
+                    </div>
+                </form>
+                <div id="register-error" class="error-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 모달 -->
+    <div id="stats-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 게임 통계</h2>
+                <span class="close" id="stats-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="stats-content">
+                    <div class="stats-overview">
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-games">-</div>
+                            <div class="stat-label">총 게임</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="win-rate">-%</div>
+                            <div class="stat-label">승률</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-wins">-</div>
+                            <div class="stat-label">승리</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-losses">-</div>
+                            <div class="stat-label">패배</div>
+                        </div>
+                    </div>
+                    <div class="recent-games">
+                        <h3>최근 게임</h3>
+                        <div id="recent-games-list"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

@@ -2,6 +2,24 @@
 
 이 프로젝트에서 Claude Code가 참고할 수 있는 개발 정보들을 정리했습니다.
 
+## 📊 현재 개발 상황 (최종 업데이트)
+
+### ✅ 완료된 기능들
+- **기본 게임 시스템**: 가위바위보 게임 로직
+- **서버 사이드 게임 처리**: Express.js 기반 API
+- **데이터베이스 연동**: SQLite3 + 사용자/게임기록 테이블
+- **완전한 사용자 인증 시스템**: JWT + bcrypt
+- **인증 UI**: 로그인/회원가입/통계 모달
+- **개인 통계 시스템**: 승률, 게임 기록 추적
+- **반응형 디자인**: 모바일/데스크톱 지원
+
+### 🎯 현재 기능 상태
+- **PvE 모드**: ✅ 완전 구현됨
+- **PvP 모드**: ⚠️ 메뉴만 추가 (구현 대기)
+- **사용자 인증**: ✅ 완전 구현됨
+- **게임 기록**: ✅ 로그인 사용자만 자동 저장
+- **개인 통계**: ✅ 승률, 최근 게임 표시
+
 ## 🛠️ 개발 환경 설정
 
 ### 필수 명령어
@@ -24,17 +42,21 @@ npm run dev
 ## 📁 프로젝트 구조 이해
 
 ### 핵심 파일들
-- `app.js`: Express 서버 메인 파일
-- `public/index.html`: 메인 HTML 페이지
-- `public/styles.css`: 전체 스타일링
-- `public/script.js`: 클라이언트 게임 로직
+- `app.js`: Express 서버 메인 파일 + 인증 API
+- `database.js`: SQLite 데이터베이스 연결 및 CRUD
+- `auth.js`: JWT 인증 서비스 + 미들웨어
+- `public/index.html`: 메인 HTML + 인증 모달
+- `public/styles.css`: 전체 스타일링 + 모달 CSS
+- `public/script.js`: 게임 로직 + 인증 관리
 - `package.json`: 프로젝트 설정
+- `game.db`: SQLite 데이터베이스 파일 (자동 생성)
 
 ### 개발 패턴
-- **서버**: Express.js로 API 서버 구현
-- **클라이언트**: Vanilla JavaScript로 SPA 구현
-- **통신**: fetch API를 사용한 RESTful 통신
-- **스타일**: CSS3 (Flexbox, Grid, 애니메이션)
+- **서버**: Express.js + JWT 인증 + SQLite
+- **클라이언트**: Vanilla JavaScript SPA + AuthManager
+- **통신**: fetch API + Bearer Token 인증
+- **스타일**: CSS3 + 모달 애니메이션
+- **데이터**: SQLite + 사용자별 게임 기록
 
 ## 🎯 현재 아키텍처
 
@@ -45,21 +67,27 @@ npm run dev
 4. JSON 응답으로 결과 반환
 5. 클라이언트에서 애니메이션과 UI 업데이트
 
-### API 스펙
+### 현재 API 스펙
 ```javascript
-// POST /api/play
-// Request Body:
-{
-  "playerChoice": "rock" | "paper" | "scissors"
-}
+// 인증 API
+POST /api/auth/register - 회원가입
+POST /api/auth/login - 로그인  
+GET /api/auth/me - 사용자 정보 (인증 필요)
 
-// Response:
-{
-  "playerChoice": string,
-  "computerChoice": string,
-  "result": "win" | "lose" | "draw",
-  "timestamp": string
-}
+// 게임 API
+POST /api/play - 게임 플레이 (선택적 인증)
+// Request: { "playerChoice": "rock|paper|scissors" }
+// Response: { "success": true, "playerChoice", "computerChoice", "result", "saved": boolean }
+
+// 통계 API  
+GET /api/stats - 개인 통계 (인증 필요)
+// Response: { "stats": {...}, "recentGames": [...] }
+```
+
+### 인증 헤더
+```javascript
+// 로그인 후 모든 인증 필요 API에 포함
+Authorization: Bearer <JWT_TOKEN>
 ```
 
 ## 🔧 개발 시 주의사항
@@ -72,10 +100,12 @@ npm run dev
 - 반응형 디자인 고려
 
 ### 파일 수정 시
-- `app.js`: 서버 로직 및 API 엔드포인트
-- `script.js`: 클라이언트 게임 로직 및 UI 조작
-- `styles.css`: 스타일링 및 애니메이션
-- `index.html`: DOM 구조 (최소한의 수정 권장)
+- `app.js`: 서버 로직, API 엔드포인트, 인증 로직
+- `database.js`: 데이터베이스 스키마, CRUD 오퍼레이션
+- `auth.js`: JWT 토큰 관리, 인증 미들웨어
+- `script.js`: 게임 로직, AuthManager, 모달 관리
+- `styles.css`: 스타일링, 모달 CSS, 반응형 디자인
+- `index.html`: DOM 구조, 모달 HTML (신중한 수정 필요)
 
 ## 🚀 확장 가능한 기능들
 
@@ -93,14 +123,21 @@ npm run dev
 
 ## 📋 테스트 가이드
 
-### 수동 테스트 체크리스트
-- [ ] 가위/바위/보 선택 동작
-- [ ] 승패 판정 정확성
-- [ ] 점수 업데이트
-- [ ] 게임 히스토리 기록
-- [ ] 모드 전환 (PvE/PvP)
-- [ ] 반응형 디자인 (모바일/데스크톱)
-- [ ] 에러 핸들링 (서버 연결 실패)
+### 현재 테스트 체크리스트
+- [x] 가위/바위/보 선택 동작
+- [x] 승패 판정 정확성  
+- [x] 점수 업데이트
+- [x] 게임 히스토리 기록
+- [x] 회원가입/로그인 기능
+- [x] JWT 토큰 인증
+- [x] 로그인 상태 UI 변경
+- [x] 개인 통계 조회
+- [x] 게임 기록 자동 저장 (로그인 시)
+- [x] 게스트 플레이 가능
+- [x] 모달 UI/UX
+- [x] 반응형 디자인 (모바일/데스크톱)
+- [x] 에러 핸들링
+- [ ] PvP 모드 (구현 대기)
 
 ### 브라우저 호환성
 - Chrome, Firefox, Safari, Edge 지원
@@ -126,6 +163,11 @@ npm run dev
 *.log
 .env
 ```
+
+### 데이터베이스 정보
+- **파일**: `game.db` (SQLite)
+- **테이블**: `users`, `game_history`
+- **자동 생성**: 첫 서버 실행 시
 
 ### 커밋 가이드라인
 - feat: 새 기능 추가
