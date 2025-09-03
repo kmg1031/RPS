@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가위바위보 게임</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 가위바위보 게임</h1>
+            <div class="game-mode-menu">
+                <button id="pve-mode" class="mode-btn active">
+                    <span class="mode-icon">🤖</span>
+                    <span>PvE</span>
+                </button>
+                <button id="pvp-mode" class="mode-btn">
+                    <span class="mode-icon">👥</span>
+                    <span>PvP</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="score-board">
+            <div class="score">
+                <h3>플레이어</h3>
+                <span id="player-score">0</span>
+            </div>
+            <div class="vs">VS</div>
+            <div class="score">
+                <h3>컴퓨터</h3>
+                <span id="computer-score">0</span>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="choices">
+                <div class="choice-display">
+                    <h3>당신의 선택</h3>
+                    <div id="player-choice" class="choice-icon">❓</div>
+                </div>
+                <div class="choice-display">
+                    <h3>컴퓨터 선택</h3>
+                    <div id="computer-choice" class="choice-icon">❓</div>
+                </div>
+            </div>
+
+            <div class="result">
+                <h2 id="result-message">선택해주세요!</h2>
+            </div>
+
+            <div class="buttons">
+                <button id="rock" class="game-btn" data-choice="rock">
+                    <span class="icon">✊</span>
+                    <span>바위</span>
+                </button>
+                <button id="paper" class="game-btn" data-choice="paper">
+                    <span class="icon">✋</span>
+                    <span>보</span>
+                </button>
+                <button id="scissors" class="game-btn" data-choice="scissors">
+                    <span class="icon">✌️</span>
+                    <span>가위</span>
+                </button>
+            </div>
+
+            <div class="controls">
+                <button id="reset" class="reset-btn">게임 리셋</button>
+            </div>
+        </div>
+
+        <div class="game-history">
+            <h3>게임 기록</h3>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

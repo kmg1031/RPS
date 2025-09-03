@@ -1,0 +1,26 @@
+{
+  "name": "rps",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "path": "^0.12.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kmg1031/RPS.git"
+  },
+  "keywords": ["rock", "paper", "scissors", "game"],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kmg1031/RPS/issues"
+  },
+  "homepage": "https://github.com/kmg1031/RPS#readme",
+  "description": "Rock Paper Scissors Single Page Application"
+}
