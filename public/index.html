@@ -24,7 +24,10 @@
                 
                 <div class="auth-menu">
                     <div id="user-info" class="user-info" style="display: none;">
-                        <span id="username-display"></span>
+                        <div class="user-details">
+                            <span id="username-display"></span>
+                            <span id="user-points" class="user-points">0점</span>
+                        </div>
                         <button id="stats-btn" class="auth-btn">📊 통계</button>
                         <button id="logout-btn" class="auth-btn">로그아웃</button>
                     </div>
@@ -36,51 +39,77 @@
             </div>
         </header>
 
-        <div class="score-board">
-            <div class="score">
-                <h3>플레이어</h3>
-                <span id="player-score">0</span>
+
+        <!-- 라운드 결과 -->
+        <div id="round-result-info" class="round-result-info" style="display: none;">
+            <div class="round-result-header">
+                <h4>🏆 라운드 결과</h4>
             </div>
-            <div class="vs">VS</div>
-            <div class="score">
-                <h3>컴퓨터</h3>
-                <span id="computer-score">0</span>
+            <div class="round-result-content">
+                <div class="player-points">
+                    <span class="points-label">획득 점수:</span>
+                    <span id="player-earned-points" class="points-value">0점</span>
+                </div>
             </div>
         </div>
 
-        <div class="game-area">
-            <div class="choices">
-                <div class="choice-display">
-                    <h3>당신의 선택</h3>
-                    <div id="player-choice" class="choice-icon">❓</div>
-                </div>
-                <div class="choice-display">
-                    <h3>컴퓨터 선택</h3>
-                    <div id="computer-choice" class="choice-icon">❓</div>
+        <!-- 덱 구성 영역 -->
+        <div id="deck-builder" class="deck-builder" style="display: none;">
+            <div class="deck-header">
+                <h3>🃏 덱 구성</h3>
+                <p>한 라운드에 사용할 10개의 선택을 미리 정하세요!</p>
+                <div class="deck-counter">
+                    <span id="deck-count">0</span>/10
                 </div>
             </div>
-
-            <div class="result">
-                <h2 id="result-message">선택해주세요!</h2>
-            </div>
-
-            <div class="buttons">
-                <button id="rock" class="game-btn" data-choice="rock">
+            
+            <div class="deck-choices">
+                <button class="deck-choice-btn" data-choice="rock">
                     <span class="icon">✊</span>
                     <span>바위</span>
                 </button>
-                <button id="paper" class="game-btn" data-choice="paper">
+                <button class="deck-choice-btn" data-choice="paper">
                     <span class="icon">✋</span>
                     <span>보</span>
                 </button>
-                <button id="scissors" class="game-btn" data-choice="scissors">
+                <button class="deck-choice-btn" data-choice="scissors">
                     <span class="icon">✌️</span>
                     <span>가위</span>
                 </button>
             </div>
+            
+            <div class="deck-preview">
+                <h4>현재 덱:</h4>
+                <div id="deck-slots" class="deck-slots">
+                    <!-- 10개의 슬롯이 JavaScript로 생성됨 -->
+                </div>
+            </div>
+            
+            <div class="deck-controls">
+                <button id="deck-clear" class="deck-btn secondary">덱 초기화</button>
+                <button id="deck-random" class="deck-btn secondary">랜덤 생성</button>
+                <button id="deck-confirm" class="deck-btn primary" disabled>게임 시작</button>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="result">
+                <h2 id="result-message">덱을 구성하여 게임을 시작하세요!</h2>
+            </div>
 
             <div class="controls">
-                <button id="reset" class="reset-btn">게임 리셋</button>
+                <!-- deck-mode-toggle 버튼 제거됨 -->
+            </div>
+        </div>
+
+        <!-- 사용한 덱 영역 -->
+        <div id="used-deck-section" class="used-deck-section" style="display: none;">
+            <div class="used-deck-header">
+                <h4>🃏 사용한 덱</h4>
+                <button id="used-deck-close" class="close-deck-btn">&times;</button>
+            </div>
+            <div id="used-deck-inline" class="used-deck-display-inline">
+                <!-- JavaScript에서 동적으로 업데이트 -->
             </div>
         </div>
 
@@ -186,6 +215,75 @@
                     <div class="recent-games">
                         <h3>최근 게임</h3>
                         <div id="recent-games-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 라운드 결과 모달 -->
+    <div id="round-result-modal" class="modal">
+        <div class="modal-content round-result-content">
+            <div class="modal-header">
+                <h2 id="round-result-title">🏆 라운드 완료!</h2>
+                <span class="close" id="round-result-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="round-result-content">
+                    <div class="final-score">
+                        <div class="score-comparison">
+                            <div class="player-final-score">
+                                <h3>플레이어</h3>
+                                <div class="final-score-number" id="final-player-score">0</div>
+                            </div>
+                            <div class="vs-final">VS</div>
+                            <div class="computer-final-score">
+                                <h3>컴퓨터</h3>
+                                <div class="final-score-number" id="final-computer-score">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="round-summary">
+                        <h4>📊 라운드 요약</h4>
+                        <div class="summary-stats">
+                            <div class="summary-item">
+                                <span class="summary-label">총 게임:</span>
+                                <span class="summary-value" id="games-played">10</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">승리:</span>
+                                <span class="summary-value" id="wins-count">0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">패배:</span>
+                                <span class="summary-value" id="losses-count">0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">무승부:</span>
+                                <span class="summary-value" id="draws-count">0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">최대 연속:</span>
+                                <span class="summary-value" id="max-streak">0</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">최대 콤보:</span>
+                                <span class="summary-value" id="max-combo">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="deck-recap">
+                        <h4>🃏 사용한 덱</h4>
+                        <div id="used-deck" class="used-deck-display">
+                            <!-- JavaScript에서 동적으로 업데이트 -->
+                        </div>
+                    </div>
+
+                    <div class="round-actions">
+                        <button id="new-round-btn" class="round-action-btn primary">새 라운드 시작</button>
+                        <button id="view-stats-btn" class="round-action-btn secondary">상세 통계 보기</button>
                     </div>
                 </div>
             </div>
