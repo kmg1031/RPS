@@ -40,18 +40,6 @@
         </header>
 
 
-        <!-- 라운드 결과 -->
-        <div id="round-result-info" class="round-result-info" style="display: none;">
-            <div class="round-result-header">
-                <h4>🏆 라운드 결과</h4>
-            </div>
-            <div class="round-result-content">
-                <div class="player-points">
-                    <span class="points-label">획득 점수:</span>
-                    <span id="player-earned-points" class="points-value">0점</span>
-                </div>
-            </div>
-        </div>
 
         <!-- 덱 구성 영역 -->
         <div id="deck-builder" class="deck-builder" style="display: none;">
@@ -92,24 +80,22 @@
             </div>
         </div>
 
-        <div class="game-area">
-            <div class="result">
-                <h2 id="result-message">덱을 구성하여 게임을 시작하세요!</h2>
-            </div>
-
-            <div class="controls">
-                <!-- deck-mode-toggle 버튼 제거됨 -->
-            </div>
-        </div>
-
         <!-- 사용한 덱 영역 -->
         <div id="used-deck-section" class="used-deck-section" style="display: none;">
             <div class="used-deck-header">
                 <h4>🃏 사용한 덱</h4>
+                <div class="deck-total-score">
+                    <span class="total-score-label">총점:</span>
+                    <span class="total-score-value" id="deck-total-score">0</span>
+                </div>
                 <button id="used-deck-close" class="close-deck-btn">&times;</button>
             </div>
             <div id="used-deck-inline" class="used-deck-display-inline">
                 <!-- JavaScript에서 동적으로 업데이트 -->
+            </div>
+            <div class="deck-actions">
+                <button id="rebuild-deck-btn" class="deck-action-btn primary">덱 재구성</button>
+                <button id="play-again-btn" class="deck-action-btn secondary">다시하기</button>
             </div>
         </div>
 
@@ -221,74 +207,6 @@
         </div>
     </div>
 
-    <!-- 라운드 결과 모달 -->
-    <div id="round-result-modal" class="modal">
-        <div class="modal-content round-result-content">
-            <div class="modal-header">
-                <h2 id="round-result-title">🏆 라운드 완료!</h2>
-                <span class="close" id="round-result-close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div id="round-result-content">
-                    <div class="final-score">
-                        <div class="score-comparison">
-                            <div class="player-final-score">
-                                <h3>플레이어</h3>
-                                <div class="final-score-number" id="final-player-score">0</div>
-                            </div>
-                            <div class="vs-final">VS</div>
-                            <div class="computer-final-score">
-                                <h3>컴퓨터</h3>
-                                <div class="final-score-number" id="final-computer-score">0</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="round-summary">
-                        <h4>📊 라운드 요약</h4>
-                        <div class="summary-stats">
-                            <div class="summary-item">
-                                <span class="summary-label">총 게임:</span>
-                                <span class="summary-value" id="games-played">10</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">승리:</span>
-                                <span class="summary-value" id="wins-count">0</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">패배:</span>
-                                <span class="summary-value" id="losses-count">0</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">무승부:</span>
-                                <span class="summary-value" id="draws-count">0</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">최대 연속:</span>
-                                <span class="summary-value" id="max-streak">0</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">최대 콤보:</span>
-                                <span class="summary-value" id="max-combo">0</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="deck-recap">
-                        <h4>🃏 사용한 덱</h4>
-                        <div id="used-deck" class="used-deck-display">
-                            <!-- JavaScript에서 동적으로 업데이트 -->
-                        </div>
-                    </div>
-
-                    <div class="round-actions">
-                        <button id="new-round-btn" class="round-action-btn primary">새 라운드 시작</button>
-                        <button id="view-stats-btn" class="round-action-btn secondary">상세 통계 보기</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script src="script.js"></script>
 </body>

@@ -1,16 +1,17 @@
 const express = require('express');
-const router = express.Router();
 const { AuthService, authenticateToken } = require('../auth');
 
-// 회원가입
-router.post('/register', 
-    AuthService.validateRegister(),
-    AuthService.checkValidation,
-    async (req, res) => {
-        try {
-            const { username, email, password } = req.body;
-            const Database = require('../database');
-            const db = new Database();
+module.exports = (database) => {
+    const router = express.Router();
+
+    // 회원가입
+    router.post('/register', 
+        AuthService.validateRegister(),
+        AuthService.checkValidation,
+        async (req, res) => {
+            try {
+                const { username, email, password } = req.body;
+                const db = database;
 
             // 중복 체크
             const existingUser = await db.getUserByUsername(username);
@@ -60,14 +61,13 @@ router.post('/register',
 );
 
 // 로그인
-router.post('/login',
-    AuthService.validateLogin(),
-    AuthService.checkValidation,
-    async (req, res) => {
-        try {
-            const { username, password } = req.body;
-            const Database = require('../database');
-            const db = new Database();
+    router.post('/login',
+        AuthService.validateLogin(),
+        AuthService.checkValidation,
+        async (req, res) => {
+            try {
+                const { username, password } = req.body;
+                const db = database;
 
             // 사용자 조회
             const user = await db.getUserByUsername(username);
@@ -117,10 +117,9 @@ router.post('/login',
 );
 
 // 사용자 정보 조회
-router.get('/me', authenticateToken, async (req, res) => {
-    try {
-        const Database = require('../database');
-        const db = new Database();
+    router.get('/me', authenticateToken, async (req, res) => {
+        try {
+            const db = database;
         const user = await db.getUserById(req.user.id);
         if (!user) {
             return res.status(404).json({
@@ -146,6 +145,7 @@ router.get('/me', authenticateToken, async (req, res) => {
             message: '사용자 정보를 가져오는 중 오류가 발생했습니다.'
         });
     }
-});
+    });
 
-module.exports = router;
+    return router;
+};

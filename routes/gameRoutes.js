@@ -1,12 +1,13 @@
 const express = require('express');
-const router = express.Router();
 const GameLogic = require('../game');
 const { optionalAuth, authenticateToken } = require('../auth');
 
-const gameLogic = new GameLogic();
+module.exports = (database) => {
+    const router = express.Router();
+    const gameLogic = new GameLogic();
 
-// 단일 게임 플레이
-router.post('/play', optionalAuth, async (req, res) => {
+    // 단일 게임 플레이
+    router.post('/play', optionalAuth, async (req, res) => {
     try {
         const { playerChoice } = req.body;
         
@@ -26,8 +27,7 @@ router.post('/play', optionalAuth, async (req, res) => {
 
         // 로그인한 사용자의 경우 라운드 기반 게임 처리
         if (req.user) {
-            const Database = require('../database');
-            const db = new Database();
+            const db = database;
             
             // 현재 진행 중인 라운드 조회
             let currentRound = await db.getCurrentRound(req.user.id);
@@ -114,8 +114,8 @@ router.post('/play', optionalAuth, async (req, res) => {
     }
 });
 
-// 라운드 플레이 (10게임 한번에 처리)
-router.post('/play-round', optionalAuth, async (req, res) => {
+    // 라운드 플레이 (10게임 한번에 처리)
+    router.post('/play-round', optionalAuth, async (req, res) => {
     try {
         const { playerDeck } = req.body;
         
@@ -139,8 +139,7 @@ router.post('/play-round', optionalAuth, async (req, res) => {
         // 로그인한 사용자의 경우 DB에 저장
         if (req.user) {
             try {
-                const Database = require('../database');
-                const db = new Database();
+                const db = database;
                 
                 // 새 라운드 시작
                 const newRound = await db.startNewRound(req.user.id);
@@ -196,10 +195,9 @@ router.post('/play-round', optionalAuth, async (req, res) => {
 });
 
 // 현재 라운드 정보 조회
-router.get('/current-round', authenticateToken, async (req, res) => {
-    try {
-        const Database = require('../database');
-        const db = new Database();
+    router.get('/current-round', authenticateToken, async (req, res) => {
+        try {
+            const db = database;
         const currentRound = await db.getCurrentRound(req.user.id);
         
         if (!currentRound) {
@@ -227,10 +225,9 @@ router.get('/current-round', authenticateToken, async (req, res) => {
 });
 
 // 사용자 게임 통계 조회
-router.get('/stats', authenticateToken, async (req, res) => {
-    try {
-        const Database = require('../database');
-        const db = new Database();
+    router.get('/stats', authenticateToken, async (req, res) => {
+        try {
+            const db = database;
         const stats = await db.getUserStats(req.user.id);
         const roundHistory = await db.getUserRoundHistory(req.user.id, 10);
 
@@ -246,6 +243,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
             message: '통계 정보를 가져오는 중 오류가 발생했습니다.'
         });
     }
-});
+    });
 
-module.exports = router;
+    return router;
+};

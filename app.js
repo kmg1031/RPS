@@ -13,9 +13,14 @@ const db = new Database();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 라우터 연결
-app.use('/api/auth', authRoutes);
-app.use('/api', gameRoutes);
+// 라우터 연결 (데이터베이스 초기화 후 설정)
+async function setupRoutes() {
+    const authRoutesWithDb = authRoutes(db);
+    const gameRoutesWithDb = gameRoutes(db);
+    
+    app.use('/api/auth', authRoutesWithDb);
+    app.use('/api', gameRoutesWithDb);
+}
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -27,6 +32,10 @@ async function startServer() {
     try {
         await db.init();
         console.log('✅ 데이터베이스 초기화 완료');
+        
+        // 데이터베이스 초기화 후 라우터 설정
+        await setupRoutes();
+        console.log('✅ 라우터 설정 완료');
         
         app.listen(PORT, () => {
             console.log(`🎮 가위바위보 게임 서버가 http://localhost:${PORT} 에서 실행중입니다!`);

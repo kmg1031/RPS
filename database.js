@@ -151,6 +151,11 @@ class Database {
 
     async getUserByUsername(username) {
         return new Promise((resolve, reject) => {
+            if (!this.db) {
+                reject(new Error('데이터베이스가 초기화되지 않았습니다. init() 메서드를 먼저 호출하세요.'));
+                return;
+            }
+            
             const sql = `SELECT * FROM users WHERE username = ?`;
             this.db.get(sql, [username], (err, row) => {
                 if (err) {
@@ -296,13 +301,41 @@ class Database {
 
     async getUserRoundHistory(userId, limit = 10) {
         return new Promise((resolve, reject) => {
-            const sql = `SELECT * FROM round_history WHERE user_id = ? 
-                        ORDER BY played_at DESC LIMIT ?`;
+            const sql = `
+                SELECT 
+                    rh.*,
+                    (
+                        SELECT json_group_array(
+                            json_object(
+                                'game_number', gd.game_number,
+                                'player_choice', gd.player_choice,
+                                'computer_choice', gd.computer_choice,
+                                'result', gd.result,
+                                'points_earned', gd.points_earned,
+                                'win_stack_count', gd.win_stack_count,
+                                'lose_stack_count', gd.lose_stack_count,
+                                'stack_broken', gd.stack_broken,
+                                'played_at', gd.played_at
+                            )
+                        )
+                        FROM game_details gd 
+                        WHERE gd.round_id = rh.id 
+                        ORDER BY gd.game_number
+                    ) as games
+                FROM round_history rh
+                WHERE rh.user_id = ? 
+                ORDER BY rh.played_at DESC 
+                LIMIT ?`;
             this.db.all(sql, [userId, limit], (err, rows) => {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(rows);
+                    // JSON 문자열을 파싱하여 JavaScript 객체로 변환
+                    const processedRows = rows.map(row => ({
+                        ...row,
+                        games: row.games ? JSON.parse(row.games) : []
+                    }));
+                    resolve(processedRows);
                 }
             });
         });
