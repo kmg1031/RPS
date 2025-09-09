@@ -1,3 +1,5 @@
+const Deck = require('./deck');
+
 /**
  * 가위바위보 게임 로직을 담당하는 클래스
  */
@@ -53,24 +55,49 @@ class GameLogic {
     }
 
     /**
-     * 라운드 게임 처리 (10게임 일괄 처리)
-     * @param {Array} playerDeck 플레이어 덱 (10개 선택)
+     * 라운드 게임 처리 (10게임 일괄 처리) - 덱 객체 버전
+     * @param {Deck|Array} playerDeckInput 플레이어 덱 (Deck 객체 또는 배열)
+     * @param {Deck} computerDeckInput 컴퓨터 덱 (선택사항, 없으면 랜덤 생성)
      * @returns {Object} 라운드 결과
      */
-    playRoundBatch(playerDeck) {
-        if (!playerDeck || !Array.isArray(playerDeck) || playerDeck.length !== 10) {
-            throw new Error('유효하지 않은 덱입니다. 10개의 선택이 필요합니다.');
+    playRoundWithDecks(playerDeckInput, computerDeckInput = null) {
+        // 플레이어 덱 처리
+        let playerDeck;
+        if (playerDeckInput instanceof Deck) {
+            playerDeck = playerDeckInput.clone().reset();
+        } else if (Array.isArray(playerDeckInput)) {
+            playerDeck = Deck.createFromArray(playerDeckInput);
+        } else {
+            throw new Error('유효하지 않은 플레이어 덱입니다.');
         }
 
-        // 모든 선택이 유효한지 확인
-        const invalidChoices = playerDeck.filter(choice => !this.choices.includes(choice));
-        if (invalidChoices.length > 0) {
-            throw new Error('덱에 유효하지 않은 선택이 포함되어 있습니다.');
+        // 덱 유효성 검사
+        if (!playerDeck.isComplete()) {
+            throw new Error('플레이어 덱이 완성되지 않았습니다. 10개의 선택이 필요합니다.');
         }
 
-        // 컴퓨터 덱 생성 (랜덤)
-        const computerDeck = Array.from({ length: 10 }, () => this.getComputerChoice());
+        playerDeck.validate();
 
+        // 컴퓨터 덱 처리
+        let computerDeck;
+        if (computerDeckInput instanceof Deck) {
+            computerDeck = computerDeckInput.clone().reset();
+        } else {
+            computerDeck = Deck.createRandom(10);
+        }
+
+        computerDeck.validate();
+
+        return this.playRoundWithDeckObjects(playerDeck, computerDeck);
+    }
+
+    /**
+     * 두 덱으로 라운드 게임 처리
+     * @param {Deck} playerDeck 플레이어 덱
+     * @param {Deck} computerDeck 컴퓨터 덱
+     * @returns {Object} 라운드 결과
+     */
+    playRoundWithDeckObjects(playerDeck, computerDeck) {
         // 10게임 시뮬레이션
         const gameResults = [];
         let playerScore = 0;
@@ -83,8 +110,8 @@ class GameLogic {
         let maxComboScore = 0;
 
         for (let i = 0; i < 10; i++) {
-            const playerChoice = playerDeck[i];
-            const computerChoice = computerDeck[i];
+            const playerChoice = playerDeck.getNextCard();
+            const computerChoice = computerDeck.getNextCard();
             const result = this.determineWinner(playerChoice, computerChoice);
 
             // 선택이 바뀌었는지 확인
@@ -156,8 +183,10 @@ class GameLogic {
             maxStreakScore,
             maxComboScore,
             gameResults,
-            playerDeck,
-            computerDeck,
+            playerDeck: playerDeck.toArray(),
+            computerDeck: computerDeck.toArray(),
+            playerDeckObject: playerDeck,
+            computerDeckObject: computerDeck,
             timestamp: new Date().toISOString()
         };
     }
@@ -228,14 +257,69 @@ class GameLogic {
     }
 
     /**
-     * 덱 유효성 검사
-     * @param {Array} deck 덱 배열
+     * 라운드 게임 처리 (10게임 일괄 처리) - 기존 배열 버전 (하위 호환성)
+     * @param {Array} playerDeck 플레이어 덱 (10개 선택)
+     * @returns {Object} 라운드 결과
+     */
+    playRoundBatch(playerDeck) {
+        if (!playerDeck || !Array.isArray(playerDeck) || playerDeck.length !== 10) {
+            throw new Error('유효하지 않은 덱입니다. 10개의 선택이 필요합니다.');
+        }
+
+        // 모든 선택이 유효한지 확인
+        const invalidChoices = playerDeck.filter(choice => !this.choices.includes(choice));
+        if (invalidChoices.length > 0) {
+            throw new Error('덱에 유효하지 않은 선택이 포함되어 있습니다.');
+        }
+
+        // 새로운 덱 기반 메서드 호출
+        return this.playRoundWithDecks(playerDeck);
+    }
+
+    /**
+     * 덱 유효성 검사 (배열 또는 Deck 객체)
+     * @param {Array|Deck} deck 덱 배열 또는 Deck 객체
      * @returns {boolean} 유효성
      */
     isValidDeck(deck) {
+        if (deck instanceof Deck) {
+            try {
+                deck.validate();
+                return deck.isComplete();
+            } catch (error) {
+                return false;
+            }
+        }
+        
         return Array.isArray(deck) && 
                deck.length === 10 && 
                deck.every(choice => this.isValidChoice(choice));
+    }
+
+    /**
+     * 컴퓨터 덱 생성
+     * @param {number} size 덱 크기 (기본: 10)
+     * @returns {Deck} 컴퓨터 덱 객체
+     */
+    createComputerDeck(size = 10) {
+        return Deck.createRandom(size);
+    }
+
+    /**
+     * 플레이어 덱을 Deck 객체로 변환
+     * @param {Array|Deck} input 입력 덱
+     * @returns {Deck} Deck 객체
+     */
+    createPlayerDeck(input) {
+        if (input instanceof Deck) {
+            return input.clone();
+        }
+        
+        if (Array.isArray(input)) {
+            return Deck.createFromArray(input);
+        }
+        
+        throw new Error('유효하지 않은 덱 형식입니다.');
     }
 }
 

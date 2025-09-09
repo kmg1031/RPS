@@ -28,7 +28,6 @@
                             <span id="username-display"></span>
                             <span id="user-points" class="user-points">0점</span>
                         </div>
-                        <button id="stats-btn" class="auth-btn">📊 통계</button>
                         <button id="logout-btn" class="auth-btn">로그아웃</button>
                     </div>
                     <div id="auth-buttons" class="auth-buttons">
@@ -100,7 +99,7 @@
         </div>
 
         <div class="game-history">
-            <h3>게임 기록</h3>
+            <h3>라운드 기록</h3>
             <div id="history-list"></div>
         </div>
     </div>
@@ -171,41 +170,6 @@
         </div>
     </div>
 
-    <!-- 통계 모달 -->
-    <div id="stats-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📊 게임 통계</h2>
-                <span class="close" id="stats-close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div id="stats-content">
-                    <div class="stats-overview">
-                        <div class="stat-card">
-                            <div class="stat-number" id="total-games">-</div>
-                            <div class="stat-label">총 게임</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="win-rate">-%</div>
-                            <div class="stat-label">승률</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="total-wins">-</div>
-                            <div class="stat-label">승리</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="total-losses">-</div>
-                            <div class="stat-label">패배</div>
-                        </div>
-                    </div>
-                    <div class="recent-games">
-                        <h3>최근 게임</h3>
-                        <div id="recent-games-list"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
 
     <script src="script.js"></script>

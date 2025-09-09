@@ -114,10 +114,10 @@ module.exports = (database) => {
     }
 });
 
-    // 라운드 플레이 (10게임 한번에 처리)
+    // 라운드 플레이 (10게임 한번에 처리) - 덱 기반
     router.post('/play-round', optionalAuth, async (req, res) => {
     try {
-        const { playerDeck } = req.body;
+        const { playerDeck, computerDeck } = req.body;
         
         // 덱 유효성 검사
         if (!gameLogic.isValidDeck(playerDeck)) {
@@ -127,8 +127,19 @@ module.exports = (database) => {
             });
         }
 
-        // 게임 로직으로 라운드 처리
-        const roundData = gameLogic.playRoundBatch(playerDeck);
+        // 컴퓨터 덱이 제공되지 않으면 랜덤 생성
+        let computerDeckToUse = computerDeck;
+        if (!computerDeckToUse) {
+            computerDeckToUse = gameLogic.createComputerDeck();
+        } else if (!gameLogic.isValidDeck(computerDeckToUse)) {
+            return res.status(400).json({ 
+                success: false,
+                message: '유효하지 않은 컴퓨터 덱입니다.' 
+            });
+        }
+
+        // 덱 기반 게임 로직으로 라운드 처리
+        const roundData = gameLogic.playRoundWithDecks(playerDeck, computerDeckToUse);
         
         let responseData = {
             success: true,
@@ -194,6 +205,105 @@ module.exports = (database) => {
     }
 });
 
+    // 덱 vs 덱 플레이 (두 덱을 받아서 게임 진행)
+    router.post('/play-deck-vs-deck', optionalAuth, async (req, res) => {
+        try {
+            const { playerDeck, computerDeck } = req.body;
+            
+            // 두 덱 모두 필수
+            if (!playerDeck || !computerDeck) {
+                return res.status(400).json({ 
+                    success: false,
+                    message: '플레이어 덱과 컴퓨터 덱이 모두 필요합니다.' 
+                });
+            }
+
+            // 덱 유효성 검사
+            if (!gameLogic.isValidDeck(playerDeck)) {
+                return res.status(400).json({ 
+                    success: false,
+                    message: '유효하지 않은 플레이어 덱입니다. 10개의 유효한 선택이 필요합니다.' 
+                });
+            }
+
+            if (!gameLogic.isValidDeck(computerDeck)) {
+                return res.status(400).json({ 
+                    success: false,
+                    message: '유효하지 않은 컴퓨터 덱입니다. 10개의 유효한 선택이 필요합니다.' 
+                });
+            }
+
+            // Deck 객체로 변환
+            const playerDeckObj = gameLogic.createPlayerDeck(playerDeck);
+            const computerDeckObj = gameLogic.createPlayerDeck(computerDeck);
+
+            // 덱 기반 게임 진행
+            const roundData = gameLogic.playRoundWithDeckObjects(playerDeckObj, computerDeckObj);
+            
+            let responseData = {
+                success: true,
+                ...roundData,
+                saved: false
+            };
+
+            // 로그인한 사용자의 경우 DB에 저장
+            if (req.user) {
+                try {
+                    const db = database;
+                    
+                    // 새 라운드 시작
+                    const newRound = await db.startNewRound(req.user.id);
+                    
+                    // 각 게임별 상세 정보 저장
+                    for (const game of roundData.gameResults) {
+                        await db.saveGameInRound(
+                            newRound.id,
+                            game.gameNumber,
+                            game.playerChoice,
+                            game.computerChoice,
+                            game.result,
+                            game.pointsEarned,
+                            game.streakScore,
+                            game.loseScore,
+                            game.stackBroken
+                        );
+                    }
+
+                    // 라운드 완료 처리
+                    await db.updateRoundProgress(
+                        newRound.id,
+                        roundData.playerScore,
+                        roundData.computerScore,
+                        roundData.maxStreakScore,
+                        0, // currentLoseScore
+                        roundData.playerDeck[9], // 마지막 선택
+                        10 // 게임 완료
+                    );
+
+                    // 승점 업데이트
+                    if (roundData.playerScore > 0) {
+                        await db.updateUserPoints(req.user.id, roundData.playerScore);
+                    }
+
+                    responseData.saved = true;
+                    responseData.roundId = newRound.id;
+                } catch (error) {
+                    console.error('덱 vs 덱 게임 저장 중 오류:', error);
+                    // 저장 실패해도 게임 결과는 반환
+                }
+            }
+
+            res.json(responseData);
+
+        } catch (error) {
+            console.error('덱 vs 덱 게임 오류:', error);
+            res.status(500).json({
+                success: false,
+                message: error.message || '덱 vs 덱 게임 처리 중 오류가 발생했습니다.'
+            });
+        }
+    });
+
 // 현재 라운드 정보 조회
     router.get('/current-round', authenticateToken, async (req, res) => {
         try {
@@ -224,26 +334,6 @@ module.exports = (database) => {
     }
 });
 
-// 사용자 게임 통계 조회
-    router.get('/stats', authenticateToken, async (req, res) => {
-        try {
-            const db = database;
-        const stats = await db.getUserStats(req.user.id);
-        const roundHistory = await db.getUserRoundHistory(req.user.id, 10);
-
-        res.json({
-            success: true,
-            stats,
-            roundHistory
-        });
-    } catch (error) {
-        console.error('통계 조회 오류:', error);
-        res.status(500).json({
-            success: false,
-            message: '통계 정보를 가져오는 중 오류가 발생했습니다.'
-        });
-    }
-    });
 
     return router;
 };

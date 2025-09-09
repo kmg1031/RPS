@@ -1,14 +1,242 @@
+class Deck {
+    constructor(maxSize = 10) {
+        this.cards = [];
+        this.maxSize = maxSize;
+        this.currentIndex = 0;
+        this.isLocked = false;
+    }
+
+    addCard(choice) {
+        if (this.isLocked) {
+            throw new Error('덱이 잠겨있어 카드를 추가할 수 없습니다.');
+        }
+        
+        if (this.cards.length >= this.maxSize) {
+            throw new Error('덱이 가득 찼습니다.');
+        }
+
+        if (!this.isValidChoice(choice)) {
+            throw new Error('유효하지 않은 선택입니다.');
+        }
+
+        this.cards.push(choice);
+        return this;
+    }
+
+    removeCard(index) {
+        if (this.isLocked) {
+            throw new Error('덱이 잠겨있어 카드를 제거할 수 없습니다.');
+        }
+
+        if (index < 0 || index >= this.cards.length) {
+            throw new Error('유효하지 않은 인덱스입니다.');
+        }
+
+        this.cards.splice(index, 1);
+        return this;
+    }
+
+    clear() {
+        if (this.isLocked) {
+            throw new Error('덱이 잠겨있어 초기화할 수 없습니다.');
+        }
+
+        this.cards = [];
+        this.currentIndex = 0;
+        return this;
+    }
+
+    generateRandom() {
+        if (this.isLocked) {
+            throw new Error('덱이 잠겨있어 랜덤 생성할 수 없습니다.');
+        }
+
+        const choices = ['rock', 'paper', 'scissors'];
+        this.clear();
+        
+        for (let i = 0; i < this.maxSize; i++) {
+            const randomChoice = choices[Math.floor(Math.random() * choices.length)];
+            this.cards.push(randomChoice);
+        }
+        
+        return this;
+    }
+
+    getNextCard() {
+        if (this.currentIndex >= this.cards.length) {
+            throw new Error('덱에 사용할 수 있는 카드가 더 이상 없습니다.');
+        }
+
+        const card = this.cards[this.currentIndex];
+        this.currentIndex++;
+        return card;
+    }
+
+    getCard(index) {
+        if (index < 0 || index >= this.cards.length) {
+            throw new Error('유효하지 않은 인덱스입니다.');
+        }
+        
+        return this.cards[index];
+    }
+
+    getCurrentCard() {
+        if (this.currentIndex >= this.cards.length) {
+            throw new Error('덱에 사용할 수 있는 카드가 더 이상 없습니다.');
+        }
+
+        return this.cards[this.currentIndex];
+    }
+
+    reset() {
+        this.currentIndex = 0;
+        return this;
+    }
+
+    lock() {
+        this.isLocked = true;
+        return this;
+    }
+
+    unlock() {
+        this.isLocked = false;
+        return this;
+    }
+
+    isFull() {
+        return this.cards.length >= this.maxSize;
+    }
+
+    isEmpty() {
+        return this.cards.length === 0;
+    }
+
+    isComplete() {
+        return this.cards.length === this.maxSize;
+    }
+
+    hasMoreCards() {
+        return this.currentIndex < this.cards.length;
+    }
+
+    isValidChoice(choice) {
+        const validChoices = ['rock', 'paper', 'scissors'];
+        return validChoices.includes(choice);
+    }
+
+    getSize() {
+        return this.cards.length;
+    }
+
+    getMaxSize() {
+        return this.maxSize;
+    }
+
+    getCurrentIndex() {
+        return this.currentIndex;
+    }
+
+    getRemainingCards() {
+        return this.cards.length - this.currentIndex;
+    }
+
+    getCards() {
+        return [...this.cards];
+    }
+
+    toArray() {
+        return [...this.cards];
+    }
+
+    toJSON() {
+        return {
+            cards: this.cards,
+            maxSize: this.maxSize,
+            currentIndex: this.currentIndex,
+            isLocked: this.isLocked
+        };
+    }
+
+    static fromJSON(data) {
+        const deck = new Deck(data.maxSize);
+        deck.cards = [...data.cards];
+        deck.currentIndex = data.currentIndex;
+        deck.isLocked = data.isLocked;
+        return deck;
+    }
+
+    clone() {
+        const clonedDeck = new Deck(this.maxSize);
+        clonedDeck.cards = [...this.cards];
+        clonedDeck.currentIndex = this.currentIndex;
+        clonedDeck.isLocked = this.isLocked;
+        return clonedDeck;
+    }
+
+    validate() {
+        if (this.cards.length > this.maxSize) {
+            throw new Error('덱 크기가 최대 크기를 초과했습니다.');
+        }
+
+        if (this.currentIndex < 0 || this.currentIndex > this.cards.length) {
+            throw new Error('현재 인덱스가 유효하지 않습니다.');
+        }
+
+        for (let i = 0; i < this.cards.length; i++) {
+            if (!this.isValidChoice(this.cards[i])) {
+                throw new Error(`인덱스 ${i}의 카드가 유효하지 않습니다: ${this.cards[i]}`);
+            }
+        }
+
+        return true;
+    }
+
+    getStats() {
+        const stats = {
+            rock: 0,
+            paper: 0,
+            scissors: 0
+        };
+
+        this.cards.forEach(card => {
+            stats[card]++;
+        });
+
+        return {
+            ...stats,
+            total: this.cards.length,
+            percentages: {
+                rock: this.cards.length > 0 ? (stats.rock / this.cards.length * 100).toFixed(1) : 0,
+                paper: this.cards.length > 0 ? (stats.paper / this.cards.length * 100).toFixed(1) : 0,
+                scissors: this.cards.length > 0 ? (stats.scissors / this.cards.length * 100).toFixed(1) : 0
+            }
+        };
+    }
+
+    toString() {
+        const cardSymbols = {
+            rock: '✊',
+            paper: '✋',
+            scissors: '✌️'
+        };
+
+        return this.cards.map((card, index) => {
+            const symbol = cardSymbols[card];
+            const marker = index === this.currentIndex ? '→' : ' ';
+            return `${marker}${symbol}`;
+        }).join(' ');
+    }
+}
+
 class RPSGame {
     constructor() {
         // 라운드 기반 게임 상태
         this.currentRound = null;
         this.roundHistory = [];
-        this.gameHistory = [];
+        this.roundHistory = [];
         
         // 덱 시스템
-        this.playerDeck = [];
-        this.currentGameIndex = 0;
-        this.isDeckMode = true;
+        this.playerDeck = new Deck(10);
         
         // 게임 설정
         this.choices = ['rock', 'paper', 'scissors'];
@@ -87,32 +315,30 @@ class RPSGame {
     // prepareNextGame 메서드 제거됨 - 개별 게임 진행 비활성화
 
     addToDeck(choice) {
-        if (this.playerDeck.length >= 10) {
-            return;
+        try {
+            this.playerDeck.addCard(choice);
+            this.updateDeckDisplay();
+        } catch (error) {
+            console.warn(error.message);
         }
-
-        this.playerDeck.push(choice);
-        this.updateDeckDisplay();
     }
 
     removeFromDeck(index) {
-        if (index < this.playerDeck.length) {
-            this.playerDeck.splice(index, 1);
+        try {
+            this.playerDeck.removeCard(index);
             this.updateDeckDisplay();
+        } catch (error) {
+            console.warn(error.message);
         }
     }
 
     clearDeck() {
-        this.playerDeck = [];
+        this.playerDeck.clear();
         this.updateDeckDisplay();
     }
 
     generateRandomDeck() {
-        this.playerDeck = [];
-        for (let i = 0; i < 10; i++) {
-            const randomChoice = this.choices[Math.floor(Math.random() * this.choices.length)];
-            this.playerDeck.push(randomChoice);
-        }
+        this.playerDeck.generateRandom();
         this.updateDeckDisplay();
     }
 
@@ -121,16 +347,16 @@ class RPSGame {
         const deckCount = document.getElementById('deck-count');
         const confirmBtn = document.getElementById('deck-confirm');
 
-        deckCount.textContent = this.playerDeck.length;
-        confirmBtn.disabled = this.playerDeck.length !== 10;
+        deckCount.textContent = this.playerDeck.getSize();
+        confirmBtn.disabled = !this.playerDeck.isComplete();
 
         deckSlots.forEach((slot, index) => {
             const slotNumber = slot.querySelector('.slot-number');
-            if (index < this.playerDeck.length) {
+            if (index < this.playerDeck.getSize()) {
                 slot.classList.add('filled');
                 slot.innerHTML = `
                     <span class="slot-number">${index + 1}</span>
-                    ${this.choiceEmojis[this.playerDeck[index]]}
+                    ${this.choiceEmojis[this.playerDeck.getCard(index)]}
                 `;
             } else {
                 slot.classList.remove('filled');
@@ -140,10 +366,9 @@ class RPSGame {
     }
 
     confirmDeck() {
-        if (this.playerDeck.length !== 10) return;
+        if (!this.playerDeck.isComplete()) return;
 
-        this.currentGameIndex = 0;
-        this.isDeckMode = false;
+        this.playerDeck.reset().lock();
         this.showGameArea();
         this.playBatchRound();
     }
@@ -160,12 +385,11 @@ class RPSGame {
     }
 
     async playBatchRound() {
-        if (this.playerDeck.length !== 10) {
+        if (!this.playerDeck.isComplete()) {
             alert('덱이 완성되지 않았습니다!');
             return;
         }
 
-        this.disableButtons();
 
         try {
             const headers = {
@@ -176,7 +400,7 @@ class RPSGame {
             const response = await fetch('/api/play-round', {
                 method: 'POST',
                 headers,
-                body: JSON.stringify({ playerDeck: this.playerDeck })
+                body: JSON.stringify({ playerDeck: this.playerDeck.toArray() })
             });
             
             const roundData = await response.json();
@@ -191,7 +415,6 @@ class RPSGame {
         } catch (error) {
             console.error('배치 게임 오류:', error);
             alert('서버 연결 오류가 발생했습니다.');
-            this.enableButtons();
         }
     }
 
@@ -206,13 +429,13 @@ class RPSGame {
                 pointsEarned: game.pointsEarned,
                 streakScore: game.streakScore,
                 comboScore: game.comboScore,
-                gameNumber: this.gameHistory.length + 1,
+                gameNumber: this.roundHistory.length + 1,
                 timestamp: new Date().toLocaleTimeString(),
                 roundGame: index + 1 // 라운드 내 게임 순서 (1-10)
             };
             
             // 히스토리 앞에 추가 (최신 게임이 위에 표시됨)
-            this.gameHistory.unshift(historyItem);
+            this.roundHistory.unshift(historyItem);
         });
 
         // 점수 업데이트
@@ -225,8 +448,7 @@ class RPSGame {
                 comboScore: roundData.maxComboScore,
                 loseScore: 0,
                 gamesPlayed: 10,
-                roundComplete: true,
-                roundResult: roundData.roundResult
+                roundComplete: true
             };
         } else {
             // 게스트 모드
@@ -242,7 +464,6 @@ class RPSGame {
             this.updateDisplay();
             this.showDetailedRoundResult(roundData);
             this.bindResultButtons();
-            this.enableButtons();
             
             // 승점 업데이트 후 사용자 정보 새로고침
             if (roundData.saved && window.authManager.isLoggedIn()) {
@@ -284,11 +505,9 @@ class RPSGame {
     rebuildDeck() {
         // 덱 재구성: 완전히 새로운 덱 구성으로 돌아가기
         this.currentRound = null;
-        this.gameHistory = [];
+        this.roundHistory = [];
         this.guestScore = { player: 0, computer: 0 };
-        this.playerDeck = [];
-        this.currentGameIndex = 0;
-        this.isDeckMode = true;
+        this.playerDeck.clear().unlock();
         
         this.showDeckBuilder();
         this.updateDisplay();
@@ -296,10 +515,10 @@ class RPSGame {
     }
 
     playAgain() {
-        // 다시하기: 같은 덱으로 다시 플레이 (게임 기록 유지)
-        if (this.playerDeck.length === 10) {
-            this.currentGameIndex = 0;
-            // 게임 기록은 초기화하지 않음 - 계속 누적
+        // 다시하기: 같은 덱으로 다시 플레이 (라운드 기록 유지)
+        if (this.playerDeck.isComplete()) {
+            this.playerDeck.reset();
+            // 라운드 기록은 초기화하지 않음 - 계속 누적
             if (!window.authManager.isLoggedIn()) {
                 this.guestScore = { player: 0, computer: 0 };
             }
@@ -316,9 +535,6 @@ class RPSGame {
 
     showGameArea() {
         document.getElementById('deck-builder').style.display = 'none';
-        // game-buttons는 더 이상 표시하지 않음 (버튼이 제거됨)
-        // 리셋 버튼 제거됨
-        // deck-mode-toggle 버튼 제거됨
     }
 
     // toggleDeckMode 메서드 제거됨 - 덱 구성과 게임 결과 화면 직접 제어
@@ -335,8 +551,7 @@ class RPSGame {
                 comboScore: gameData.comboScore,
                 loseScore: gameData.loseScore,
                 gamesPlayed: gameData.gamesPlayed,
-                roundComplete: gameData.roundComplete,
-                roundResult: gameData.roundResult
+                roundComplete: gameData.roundComplete
             };
         } else {
             // 게스트 모드 - 기본 점수만 유지
@@ -359,14 +574,14 @@ class RPSGame {
             pointsEarned: gameData.pointsEarned || 0,
             streakScore: gameData.streakScore || 0,
             comboScore: gameData.comboScore || 0,
-            gameNumber: gameData.gameNumber || this.gameHistory.length + 1,
+            gameNumber: gameData.gameNumber || this.roundHistory.length + 1,
             timestamp: new Date().toLocaleTimeString()
         };
         
-        this.gameHistory.unshift(historyItem);
+        this.roundHistory.unshift(historyItem);
         
-        if (this.gameHistory.length > 50) {
-            this.gameHistory.pop();
+        if (this.roundHistory.length > 50) {
+            this.roundHistory.pop();
         }
         
         this.updateHistoryDisplay();
@@ -376,48 +591,85 @@ class RPSGame {
         const historyList = document.getElementById('history-list');
         historyList.innerHTML = '';
         
-        // 최근 20게임만 표시 (개별 게임 표시로 인한 목록 길이 조정)
-        const recentGames = this.gameHistory.slice(0, 20);
+        // 라운드 단위로 그룹핑
+        const rounds = this.groupGamesByRound(this.roundHistory);
         
-        recentGames.forEach(item => {
-            const historyDiv = document.createElement('div');
-            historyDiv.className = `history-item ${item.result}`;
+        // 최근 5라운드만 표시
+        const recentRounds = rounds.slice(0, 5);
+        
+        recentRounds.forEach(round => {
+            const roundDiv = document.createElement('div');
+            roundDiv.className = 'round-history-item';
             
-            const resultText = {
-                win: '승리',
-                lose: '패배', 
-                draw: '무승부'
-            };
+            const totalWins = round.games.filter(g => g.result === 'win').length;
+            const totalLoses = round.games.filter(g => g.result === 'lose').length;
+            const totalDraws = round.games.filter(g => g.result === 'draw').length;
+            const totalPoints = round.games.reduce((sum, g) => sum + (g.pointsEarned || 0), 0);
             
-            const pointsText = item.pointsEarned > 0 ? ` (+${item.pointsEarned}점)` : '';
-            const streakText = window.authManager.isLoggedIn() ? 
-                ` [연속:${item.streakScore} 콤보:${item.comboScore}]` : '';
+            // 라운드 한 줄 표시
+            const roundHeader = document.createElement('div');
+            roundHeader.className = 'round-header-inline';
             
-            // 라운드 내 게임 순서 표시 (있는 경우)
-            const roundGameText = item.roundGame ? ` (${item.roundGame}/10)` : '';
+            // 덱 카드들을 인라인으로 생성
+            const deckCards = round.games.map(game => game.player);
+            const gameResults = round.games;
             
-            historyDiv.innerHTML = `
-                <span class="game-number">#${item.gameNumber}${roundGameText}</span>
-                <span class="game-choices">
-                    ${this.choiceEmojis[item.player]} vs ${this.choiceEmojis[item.computer]}
-                </span>
-                <span class="result-text ${item.result}">${resultText[item.result]}${pointsText}${streakText}</span>
-                <span class="time">${item.timestamp}</span>
+            let deckCardsHtml = '';
+            deckCards.forEach((choice, index) => {
+                const gameResult = gameResults[index];
+                const result = gameResult ? gameResult.result : '';
+                const pointsEarned = gameResult ? gameResult.pointsEarned || 0 : 0;
+                const pointsDisplay = pointsEarned > 0 ? `+${pointsEarned}` : '';
+                
+                deckCardsHtml += `<span class="inline-card ${result}" title="${choice} - ${result} ${pointsDisplay}">${this.choiceEmojis[choice]}${pointsDisplay ? `<sup>${pointsDisplay}</sup>` : ''}</span>`;
+            });
+            
+            roundHeader.innerHTML = `
+                <div class="round-line">
+                    <span class="round-title">라운드 ${round.roundNumber || '?'}</span>
+                    <span class="round-score">+${totalPoints}점</span>
+                    <div class="round-deck-inline">${deckCardsHtml}</div>
+                    <span class="round-time">${round.games[0]?.timestamp || ''}</span>
+                </div>
             `;
             
-            historyList.appendChild(historyDiv);
+            // 한 줄 표시만
+            roundDiv.appendChild(roundHeader);    // 라운드 한 줄 표시
+            historyList.appendChild(roundDiv);
         });
     }
 
-    disableButtons() {
-        // 배치 모드에서는 버튼 비활성화 불필요
+    groupGamesByRound(games) {
+        const rounds = [];
+        let currentRound = null;
+        let roundNumber = 1;
+        
+        games.forEach(game => {
+            // 새로운 라운드 시작 조건: roundGame이 1이거나 없는 경우
+            if (!currentRound || game.roundGame === 1) {
+                if (currentRound) {
+                    rounds.push(currentRound);
+                    roundNumber++;
+                }
+                currentRound = {
+                    roundNumber,
+                    games: []
+                };
+            }
+            
+            if (currentRound) {
+                currentRound.games.push(game);
+            }
+        });
+        
+        // 마지막 라운드 추가
+        if (currentRound) {
+            rounds.push(currentRound);
+        }
+        
+        return rounds;
     }
 
-    enableButtons() {
-        // 배치 모드에서는 버튼 활성화 불필요
-    }
-
-    // resetGame 메서드 제거됨 - 덱 재구성 및 다시하기 버튼으로 대체
 
     updateDisplay() {
         if (this.currentRound && window.authManager.isLoggedIn()) {
@@ -496,21 +748,15 @@ class RPSGame {
     
     updateDeckUsage() {
         const deckUsage = document.getElementById('deck-usage');
-        if (!deckUsage || !this.playerDeck.length) return;
+        if (!deckUsage || !this.playerDeck.cards.length) return;
         
         deckUsage.style.display = 'block';
         const deckCards = deckUsage.querySelector('.deck-cards');
         
         deckCards.innerHTML = '';
-        this.playerDeck.forEach((choice, index) => {
+        this.playerDeck.cards.forEach((choice, index) => {
             const card = document.createElement('div');
             card.className = 'deck-card';
-            
-            if (index < this.currentGameIndex) {
-                card.classList.add('used');
-            } else if (index === this.currentGameIndex) {
-                card.classList.add('current');
-            }
             
             card.innerHTML = `
                 <span class="card-number">${index + 1}</span>
@@ -529,7 +775,15 @@ class RPSGame {
         deckSection.className = 'used-deck-section';
         
         // 사용한 덱 표시 (게임 결과와 함께)
-        this.displayUsedDeckInline(gameData.gameResults);
+        this.displayRoundResults(
+            '#used-deck-inline',
+            this.playerDeck.cards,
+            gameData.gameResults,
+            {
+                cardClass: 'used-deck-card-inline',
+                totalScoreSelector: '#deck-total-score'
+            }
+        );
         
         // 덱 섹션 표시
         deckSection.style.display = 'block';
@@ -546,7 +800,7 @@ class RPSGame {
         let maxStreak = 0, maxCombo = 0;
         let currentStreak = 0, currentCombo = 0;
         
-        this.gameHistory.forEach(game => {
+        this.roundHistory.forEach(game => {
             if (game.result === 'win') {
                 wins++;
                 currentStreak++;
@@ -569,50 +823,211 @@ class RPSGame {
     }
     
 
-    displayUsedDeckInline(gameResults) {
-        const usedDeckDiv = document.getElementById('used-deck-inline');
-        usedDeckDiv.innerHTML = '';
+    /**
+     * 게임 표기 컴포넌트 클래스
+     */
+    static GameDisplayComponent = class {
+        constructor(choiceEmojis) {
+            this.choiceEmojis = choiceEmojis || {
+                rock: '🪨',
+                paper: '📄', 
+                scissors: '✂️'
+            };
+        }
+
+        /**
+         * 라운드 결과를 특정 컨테이너에 표시
+         * @param {HTMLElement|string} container - 결과를 표시할 컨테이너
+         * @param {Array} deckCards - 덱 카드 배열
+         * @param {Array} gameResults - 게임 결과 배열
+         * @param {Object} options - 표시 옵션
+         */
+        render(container, deckCards, gameResults, options = {}) {
+            // 컨테이너 요소 가져오기
+            let containerElement;
+            if (typeof container === 'string') {
+                containerElement = document.querySelector(container);
+            } else {
+                containerElement = container;
+            }
+            
+            if (!containerElement) {
+                console.error('컨테이너 요소를 찾을 수 없습니다:', container);
+                return { totalPoints: 0, success: false };
+            }
+            
+            containerElement.innerHTML = '';
+            
+            let totalPoints = 0;
+            const cardClass = options.cardClass || 'game-card';
+            const showNumbers = options.showNumbers !== false;
+            const showPoints = options.showPoints !== false;
+            
+            deckCards.forEach((choice, index) => {
+                const card = document.createElement('div');
+                card.className = cardClass;
+                
+                // 게임 결과가 있다면 색상 적용
+                if (gameResults && gameResults[index]) {
+                    const result = gameResults[index].result;
+                    const pointsEarned = gameResults[index].pointsEarned || 0;
+                    card.classList.add(result);
+                    
+                    totalPoints += pointsEarned;
+                    
+                    const numberDisplay = showNumbers ? `<span class="card-number">${index + 1}</span>` : '';
+                    const pointsDisplay = showPoints && pointsEarned > 0 ? `<span class="card-result">+${pointsEarned}</span>` : '';
+                    
+                    card.innerHTML = `
+                        ${numberDisplay}
+                        <span class="card-choice">${this.choiceEmojis[choice]}</span>
+                        ${pointsDisplay}
+                    `;
+                    
+                    // 툴팁 추가 (옵션)
+                    if (options.showTooltip) {
+                        card.title = `${choice} - ${result} ${pointsEarned > 0 ? `(+${pointsEarned}점)` : ''}`;
+                    }
+                } else {
+                    // 게임 결과가 없을 때는 기본 표시
+                    const numberDisplay = showNumbers ? `<span class="card-number">${index + 1}</span>` : '';
+                    card.innerHTML = `
+                        ${numberDisplay}
+                        <span class="card-choice">${this.choiceEmojis[choice]}</span>
+                    `;
+                }
+                
+                containerElement.appendChild(card);
+            });
+            
+            // 총점 표시 업데이트
+            if (options.totalScoreSelector) {
+                const totalScoreElement = document.querySelector(options.totalScoreSelector);
+                if (totalScoreElement) {
+                    totalScoreElement.textContent = `${totalPoints}점`;
+                }
+            }
+            
+            return { totalPoints, success: true };
+        }
+
+        /**
+         * 단일 게임 카드 생성
+         * @param {string} choice - 선택
+         * @param {Object} gameResult - 게임 결과
+         * @param {Object} options - 표시 옵션
+         */
+        createGameCard(choice, gameResult, options = {}) {
+            const card = document.createElement('div');
+            card.className = options.cardClass || 'game-card';
+            
+            if (gameResult) {
+                card.classList.add(gameResult.result);
+                const pointsDisplay = options.showPoints && gameResult.pointsEarned > 0 
+                    ? `<span class="card-result">+${gameResult.pointsEarned}</span>` 
+                    : '';
+                
+                card.innerHTML = `
+                    <span class="card-choice">${this.choiceEmojis[choice]}</span>
+                    ${pointsDisplay}
+                `;
+            } else {
+                card.innerHTML = `<span class="card-choice">${this.choiceEmojis[choice]}</span>`;
+            }
+            
+            return card;
+        }
+    };
+
+    /**
+     * 라운드 결과를 특정 컨테이너에 표시하는 범용 함수 (하위 호환성)
+     * 
+     * 사용 예제:
+     * // 기본 사용
+     * this.displayRoundResults('#my-container', deckCards, gameResults);
+     * 
+     * // 커스텀 스타일과 옵션
+     * this.displayRoundResults('.game-display', deckCards, gameResults, {
+     *     cardClass: 'game-card small',
+     *     showNumbers: false,
+     *     showPoints: true,
+     *     showTooltip: true,
+     *     totalScoreSelector: '#total-score'
+     * });
+     * 
+     * // GameDisplayComponent 직접 사용
+     * const gameDisplay = new window.RPSGame.GameDisplayComponent(choiceEmojis);
+     * gameDisplay.render(container, deckCards, gameResults, options);
+     */
+    displayRoundResults(container, deckCards, gameResults, options = {}) {
+        // 컨테이너 요소 가져오기
+        let containerElement;
+        if (typeof container === 'string') {
+            containerElement = document.querySelector(container);
+        } else {
+            containerElement = container;
+        }
+        
+        if (!containerElement) {
+            console.error('컨테이너 요소를 찾을 수 없습니다:', container);
+            return { totalPoints: 0, success: false };
+        }
+        
+        containerElement.innerHTML = '';
         
         let totalPoints = 0;
+        const cardClass = options.cardClass || 'used-deck-card-inline';
+        const showNumbers = options.showNumbers !== false;
+        const showPoints = options.showPoints !== false;
         
-        this.playerDeck.forEach((choice, index) => {
+        deckCards.forEach((choice, index) => {
             const card = document.createElement('div');
-            card.className = 'used-deck-card-inline';
+            card.className = cardClass;
             
             // 게임 결과가 있다면 색상 적용
             if (gameResults && gameResults[index]) {
                 const result = gameResults[index].result;
                 const pointsEarned = gameResults[index].pointsEarned || 0;
-                card.classList.add(result); // win, lose, draw 클래스 추가
+                card.classList.add(result);
                 
-                // 총점 계산
                 totalPoints += pointsEarned;
                 
-                // 획득 점수 표시 (0점이 아닌 경우에만 표시)
-                const pointsDisplay = pointsEarned > 0 ? `+${pointsEarned}` : '';
+                const numberDisplay = showNumbers ? `<span class="card-number">${index + 1}</span>` : '';
+                const pointsDisplay = showPoints && pointsEarned > 0 ? `<span class="card-result">+${pointsEarned}</span>` : '';
                 
                 card.innerHTML = `
-                    <span class="card-number">${index + 1}</span>
-                    ${this.choiceEmojis[choice]}
-                    ${pointsDisplay ? `<span class="card-result">${pointsDisplay}</span>` : ''}
+                    ${numberDisplay}
+                    <span class="card-choice">${this.choiceEmojis[choice]}</span>
+                    ${pointsDisplay}
                 `;
+                
+                // 툴팁 추가 (옵션)
+                if (options.showTooltip) {
+                    card.title = `${choice} - ${result} ${pointsEarned > 0 ? `(+${pointsEarned}점)` : ''}`;
+                }
             } else {
                 // 게임 결과가 없을 때는 기본 표시
+                const numberDisplay = showNumbers ? `<span class="card-number">${index + 1}</span>` : '';
                 card.innerHTML = `
-                    <span class="card-number">${index + 1}</span>
-                    ${this.choiceEmojis[choice]}
+                    ${numberDisplay}
+                    <span class="card-choice">${this.choiceEmojis[choice]}</span>
                 `;
             }
             
-            usedDeckDiv.appendChild(card);
+            containerElement.appendChild(card);
         });
         
         // 총점 표시 업데이트
-        const totalScoreElement = document.getElementById('deck-total-score');
-        if (totalScoreElement) {
-            totalScoreElement.textContent = `${totalPoints}점`;
+        if (options.totalScoreSelector) {
+            const totalScoreElement = document.querySelector(options.totalScoreSelector);
+            if (totalScoreElement) {
+                totalScoreElement.textContent = `${totalPoints}점`;
+            }
         }
+        
+        return { totalPoints, success: true };
     }
+
     
 
     bindUsedDeckEvents() {
@@ -652,10 +1067,8 @@ class RPSGame {
         document.getElementById('used-deck-section').style.display = 'none';
         
         this.currentRound = null;
-        this.gameHistory = [];
+        this.roundHistory = [];
         this.playerDeck = [];
-        this.currentGameIndex = 0;
-        this.isDeckMode = true;
         
         this.showDeckBuilder();
         this.updateDisplay();
@@ -693,17 +1106,31 @@ class RPSGame {
                     roundComplete: data.currentRound.games_played >= 10
                 };
                 
-                // 게임 히스토리 로드
+                // 게임 히스토리를 gameResults 형식으로 로드
                 if (data.games && data.games.length > 0) {
-                    this.gameHistory = data.games.reverse().map(game => ({
-                        player: game.player_choice,
-                        computer: game.computer_choice,
+                    const gameResults = data.games.map(game => ({
+                        gameNumber: game.game_number,
+                        playerChoice: game.player_choice,
+                        computerChoice: game.computer_choice,
                         result: game.result,
                         pointsEarned: game.points_earned,
                         streakScore: game.win_stack_count,
                         comboScore: game.win_stack_count,
-                        gameNumber: game.game_number,
-                        timestamp: new Date(game.played_at).toLocaleTimeString()
+                        loseScore: game.lose_stack_count || 0,
+                        stackBroken: game.stack_broken || false
+                    }));
+                    
+                    // gameResults를 개별 히스토리 아이템으로 변환
+                    this.roundHistory = gameResults.reverse().map(game => ({
+                        player: game.playerChoice,
+                        computer: game.computerChoice,
+                        result: game.result,
+                        pointsEarned: game.pointsEarned,
+                        streakScore: game.streakScore,
+                        comboScore: game.comboScore,
+                        gameNumber: game.gameNumber,
+                        timestamp: new Date().toLocaleTimeString(),
+                        roundGame: game.gameNumber
                     }));
                 }
                 
@@ -733,9 +1160,6 @@ class AuthManager {
             this.showModal('register-modal');
         });
 
-        document.getElementById('stats-btn').addEventListener('click', () => {
-            this.loadStats();
-        });
 
         document.getElementById('logout-btn').addEventListener('click', () => {
             this.logout();
@@ -905,7 +1329,7 @@ class AuthManager {
         // 게임 상태 초기화
         if (window.rpsGame) {
             window.rpsGame.currentRound = null;
-            window.rpsGame.gameHistory = [];
+            window.rpsGame.roundHistory = [];
             window.rpsGame.updateDisplay();
         }
     }
@@ -934,115 +1358,6 @@ class AuthManager {
         }
     }
 
-    async loadStats() {
-        if (!this.isLoggedIn()) return;
-
-        try {
-            const response = await fetch('/api/stats', {
-                headers: this.getAuthHeaders()
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                this.showStatsModal(data.stats, data.roundHistory);
-            }
-        } catch (error) {
-            console.error('통계 로드 오류:', error);
-        }
-    }
-
-    showStatsModal(stats, roundHistory) {
-        const modal = document.getElementById('stats-modal');
-        const content = document.getElementById('stats-content');
-        
-        if (!content) {
-            console.error('stats-content 요소를 찾을 수 없습니다.');
-            return;
-        }
-        
-        content.innerHTML = `
-            <h3>📊 게임 통계</h3>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-label">총 라운드:</span>
-                    <span class="stat-value">${stats.totalRounds || 0}</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">라운드 승률:</span>
-                    <span class="stat-value">${stats.roundWinRate || 0}%</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">총 게임 수:</span>
-                    <span class="stat-value">${stats.totalGamesPlayed || 0}</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">평균 점수:</span>
-                    <span class="stat-value">${stats.averagePlayerScore || 0}</span>
-                </div>
-            </div>
-            
-            <h4>🏆 최근 라운드 기록</h4>
-            <div class="round-history">
-                ${roundHistory.map(round => `
-                    <div class="round-item ${round.round_result}">
-                        <div class="round-header">
-                            <span class="round-result">${this.getRoundResultText(round.round_result)}</span>
-                            <span class="round-score">${round.player_score} vs ${round.computer_score}</span>
-                            <span class="round-date">${new Date(round.played_at).toLocaleDateString()}</span>
-                        </div>
-                        ${round.games && round.games.length > 0 ? `
-                            <div class="game-details">
-                                <div class="game-details-toggle" onclick="this.parentElement.classList.toggle('expanded')">
-                                    사용한 덱 보기 (${round.games.length}게임)
-                                </div>
-                                <div class="game-deck-display">
-                                    ${round.games.map(game => `
-                                        <div class="game-deck-card ${game.result}">
-                                            <div class="card-choice">${this.getChoiceEmoji(game.player_choice)}</div>
-                                            <div class="card-number">${game.game_number}</div>
-                                            <div class="card-result">${this.getResultText(game.result)}</div>
-                                            ${game.points_earned > 0 ? `<div class="card-points">+${game.points_earned}</div>` : ''}
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-                    </div>
-                `).join('')}
-            </div>
-        `;
-        
-        this.showModal('stats-modal');
-    }
-
-    getRoundResultText(result) {
-        const texts = {
-            'win': '승리 🎉',
-            'lose': '패배 😔',
-            'draw': '무승부 🤝',
-            'in_progress': '진행중 ⏳'
-        };
-        return texts[result] || result;
-    }
-    
-    getChoiceEmoji(choice) {
-        const emojis = {
-            'rock': '✊',
-            'paper': '✋',
-            'scissors': '✌️'
-        };
-        return emojis[choice] || choice;
-    }
-    
-    getResultText(result) {
-        const texts = {
-            'win': '승',
-            'lose': '패',
-            'draw': '무'
-        };
-        return texts[result] || result;
-    }
 
     async refreshUserInfo() {
         if (!this.isLoggedIn()) return;
