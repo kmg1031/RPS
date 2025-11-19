@@ -14,14 +14,22 @@
                 <div class="game-mode-menu">
                     <button id="pve-mode" class="mode-btn active">
                         <span class="mode-icon">🤖</span>
-                        <span>PvE</span>
+                        <span>덱 모드</span>
                     </button>
-                    <button id="pvp-mode" class="mode-btn">
-                        <span class="mode-icon">👥</span>
-                        <span>PvP</span>
+                    <button id="streak-mode" class="mode-btn">
+                        <span class="mode-icon">🔥</span>
+                        <span>연승제</span>
                     </button>
                 </div>
                 
+                <div class="header-actions">
+                    <button id="achievements-btn" class="header-btn" style="display: none;">
+                        <span class="icon">🏆</span>
+                        <span>업적</span>
+                        <span class="notification-badge" id="achievement-badge" style="display: none;"></span>
+                    </button>
+                </div>
+
                 <div class="auth-menu">
                     <div id="user-info" class="user-info" style="display: none;">
                         <div class="user-details">
@@ -39,6 +47,91 @@
         </header>
 
 
+
+        <!-- 연승제 게임 영역 -->
+        <div id="streak-game-area" class="streak-game-area" style="display: none;">
+            <div class="streak-game-options">
+                <h3>🔥 연승제 게임 설정</h3>
+                <div class="option-group">
+                    <label>
+                        <input type="checkbox" id="allow-tie">
+                        <span>무승부 허용</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" id="shuffle-positions">
+                        <span>선택지 섞기</span>
+                    </label>
+                </div>
+                <button id="start-streak-game" class="primary-btn">게임 시작</button>
+            </div>
+
+            <div id="streak-game-play" class="streak-game-play" style="display: none;">
+                <div class="streak-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">현재 연승</span>
+                        <span class="stat-value" id="current-streak">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">최고 연승</span>
+                        <span class="stat-value" id="max-streak">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">획득 점수</span>
+                        <span class="stat-value" id="total-points">0</span>
+                    </div>
+                </div>
+
+                <div class="timer-container">
+                    <div class="timer-bar">
+                        <div id="timer-fill" class="timer-fill"></div>
+                    </div>
+                    <span id="timer-text" class="timer-text">20초</span>
+                </div>
+
+                <div class="computer-choice-display">
+                    <h3>이 패를 이기세요!</h3>
+                    <div id="computer-choice" class="computer-choice-card"></div>
+                </div>
+
+                <div class="player-choices" id="player-choices">
+                    <button class="choice-btn" data-choice="rock">
+                        <span class="icon">✊</span>
+                        <span>바위</span>
+                    </button>
+                    <button class="choice-btn" data-choice="paper">
+                        <span class="icon">✋</span>
+                        <span>보</span>
+                    </button>
+                    <button class="choice-btn" data-choice="scissors">
+                        <span class="icon">✌️</span>
+                        <span>가위</span>
+                    </button>
+                </div>
+
+                <div class="streak-controls">
+                    <button id="quit-streak-game" class="secondary-btn">포기</button>
+                </div>
+            </div>
+
+            <div id="streak-game-result" class="streak-game-result" style="display: none;">
+                <h2>게임 종료!</h2>
+                <div class="final-stats">
+                    <div class="final-stat">
+                        <span>최고 연승</span>
+                        <span id="final-max-streak">0</span>
+                    </div>
+                    <div class="final-stat">
+                        <span>총 점수</span>
+                        <span id="final-total-points">0</span>
+                    </div>
+                    <div class="final-stat">
+                        <span>플레이 횟수</span>
+                        <span id="final-games-played">0</span>
+                    </div>
+                </div>
+                <button id="new-streak-game" class="primary-btn">새 게임</button>
+            </div>
+        </div>
 
         <!-- 덱 구성 영역 -->
         <div id="deck-builder" class="deck-builder" style="display: none;">
@@ -87,7 +180,6 @@
                     <span class="total-score-label">총점:</span>
                     <span class="total-score-value" id="deck-total-score">0</span>
                 </div>
-                <button id="used-deck-close" class="close-deck-btn">&times;</button>
             </div>
             <div id="used-deck-inline" class="used-deck-display-inline">
                 <!-- JavaScript에서 동적으로 업데이트 -->
@@ -158,6 +250,11 @@
                                pattern="^(?=.*[a-zA-Z])(?=.*\d).{6,}$" title="영문과 숫자를 포함한 6자 이상">
                         <small>최소 6자, 영문과 숫자 포함</small>
                     </div>
+                    <div class="form-group">
+                        <label for="register-confirm-password">비밀번호 확인</label>
+                        <input type="password" id="register-confirm-password" name="confirm-password" required>
+                        <small>위와 동일한 비밀번호를 입력하세요</small>
+                    </div>
                     <div class="form-actions">
                         <button type="submit" class="submit-btn">회원가입</button>
                         <button type="button" class="switch-btn" id="switch-to-login">
@@ -170,7 +267,33 @@
         </div>
     </div>
 
-
+    <!-- 업적 모달 -->
+    <div id="achievements-modal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>🏆 업적</h2>
+                <div class="achievement-stats">
+                    <span>완료: <span id="completed-count">0</span></span>
+                    <span>전체: <span id="total-count">0</span></span>
+                    <span>완료율: <span id="completion-rate">0%</span></span>
+                </div>
+                <span class="close close-modal" id="achievements-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="achievement-categories">
+                    <button class="category-tab active" data-category="all">전체</button>
+                    <button class="category-tab" data-category="GAMEPLAY">게임 플레이</button>
+                    <button class="category-tab" data-category="STREAK">연속 기록</button>
+                    <button class="category-tab" data-category="COLLECTION">컬렉션</button>
+                    <button class="category-tab" data-category="MILESTONE">이정표</button>
+                    <button class="category-tab" data-category="SPECIAL">특별</button>
+                </div>
+                <div class="achievements-list" id="achievements-list">
+                    <div class="loading-message">업적을 불러오는 중...</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

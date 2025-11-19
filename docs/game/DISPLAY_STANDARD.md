@@ -19,7 +19,6 @@
             <span class="total-score-label">총점:</span>
             <span class="total-score-value" id="deck-total-score">0점</span>
         </div>
-        <button id="used-deck-close" class="close-deck-btn">&times;</button>
     </div>
     <div id="used-deck-inline" class="used-deck-display-inline">
         <!-- 10개의 게임 카드가 동적으로 생성됨 -->

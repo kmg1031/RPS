@@ -1,13 +1,29 @@
 {
   "permissions": {
     "allow": [
-      "Read(/C:\\nodeJS\\RPS\\public/**)",
-      "Read(/C:\\nodeJS\\RPS\\public/**)",
-      "Read(/C:\\nodeJS\\RPS\\public/**)",
-      "Read(/C:\\nodeJS\\RPS\\public/**)",
-      "Read(/C:\\nodeJS\\RPS\\public/**)"
+      "Read(../**)",
+      "Bash(npm install)",
+      "Bash(tree:*)",
+      "Bash(npm install:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(npx pm2 logs:*)",
+      "Bash(dir:*)",
+      "Bash(npx pm2 stop:*)",
+      "Bash(del /F c:nodeJSRPSroutesauthRoutes.js)",
+      "Bash(del /F c:nodeJSRPSroutesgameRoutes.js)",
+      "Bash(del /F c:nodeJSRPSauth.js)",
+      "Bash(del /F c:nodeJSRPSgame.js)",
+      "Bash(del /F c:nodeJSRPSdeck.js)",
+      "Bash(npx pm2 start:*)",
+      "Bash(npx pm2:*)",
+      "Bash(timeout 3 npx pm2 logs --lines 10 --nostream)",
+      "Bash(exit 0)"
     ],
-    "deny": [],
+    "deny": [
+      "Read(../.env)",
+      "Read(../game.db)"
+    ],
     "ask": []
   }
 }

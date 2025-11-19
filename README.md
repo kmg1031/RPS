@@ -1,200 +1,366 @@
 # 🎯 가위바위보 게임 (RPS)
 
-완전한 인증 시스템을 갖춘 Node.js 기반 가위바위보 게임
+3계층 아키텍처(Repository-Service-Controller)로 구현된 Node.js 기반 가위바위보 게임
+
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.18+-blue.svg)](https://expressjs.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0+-orange.svg)](https://www.mysql.com/)
+
+---
+
+## 📋 목차
+- [게임 룰](#️-게임-룰)
+- [주요 기능](#-주요-기능)
+- [아키텍처](#️-아키텍처)
+- [실행 방법](#-실행-방법)
+- [API 문서](#-api-문서)
+- [프로젝트 구조](#-프로젝트-구조)
+- [개발 문서](#-개발-문서)
+
+---
 
 ## ✂️ 게임 룰
 
 ### 🎯 기본 규칙
 - **가위 ✌️**: 보(종이)를 이기고, 바위에게 집니다
-- **바위 ✊**: 가위를 이기고, 보(종이)에게 집니다  
+- **바위 ✊**: 가위를 이기고, 보(종이)에게 집니다
 - **보 ✋**: 바위를 이기고, 가위에게 집니다
 
-### 🏆 승부 판정
-- **승리**: 상대방을 이기는 선택을 했을 때
-- **패배**: 상대방에게 지는 선택을 했을 때
-- **무승부**: 상대방과 같은 선택을 했을 때
-
-### 🎯 라운드 시스템 (Round System)
+### 🏆 라운드 시스템
 - **1라운드 = 10게임**: 10번의 개별 게임을 묶어서 1라운드로 구성
 - **기록 단위**: 라운드 단위로 결과 저장 및 통계 관리
 
-### 🔥 연속 점수 시스템 (Combo System)
-- **연속 동일 선택**: 같은 선택(가위/바위/보)을 연속으로 선택
-- **연속 점수 (Streak Score)**: 연속된 동일한 선택으로 무승부나 승리한 횟수
-- **콤보 점수 (Combo Score)**: 연속된 승리 횟수
-- **패배 점수 (Lose Score)**: 연속된 패배 횟수 (참고용, 점수에 영향 없음)
-- **연속 초기화 조건**: 
-  - 🔄 **다른 선택**: 이전과 다른 선택을 하면 연속 점수 **초기화**
-  - ❌ **패배**: 같은 선택으로 지면 연속 점수 **초기화**
-- **점수 획득 조건**: 
-  - ✅ **승리**: 연속 점수 증가 + 연속 점수만큼 점수 획득
-  - ✅ **무승부**: 연속 점수 유지 + 점수 획득 없음
-  - ❌ **패배**: 연속 점수 초기화, 점수 획득 없음
-  - 🔄 **선택 변경**: 연속 점수 초기화, 새로운 연속 시작
-- **점수 계산 예시**:
-  - 바위 3연속 승리 → 연속 점수 3, 3점 획득
-  - 가위로 2승 1무 → 연속 점수 2, 2점 획득 (무승부로 연속 유지, 점수는 승리분만)
-  - 바위 2승 후 가위 선택 → 연속 점수 초기화, 새로운 연속 시작
-  - 보로 2승 후 1패배 → 연속 점수 초기화, 패배 점수 1
-
-### 📚 게임 용어
-- **덱 (Deck)**: 한 라운드에서 사용되는 플레이어 또는 컴퓨터의 10개의 선택 묶음
-- **연속 점수 (Streak Score)**: 연속된 동일한 선택으로 무승부나 승리한 횟수
-- **콤보 점수 (Combo Score)**: 연속된 승리 횟수
-- **패배 점수 (Lose Score)**: 연속된 패배 횟수
-- **연속 브레이크**: 연속이 끊어지는 순간 (패배 또는 선택 변경 시)
-- **콤보 (Combo)**: 연속된 성공적인 동일 선택의 연결
-- **선택 변경 (Choice Change)**: 이전과 다른 선택을 하는 행위
+### 🔥 연속 점수 시스템
+- **Streak Score (연속 점수)**: 동일 선택으로 무승부나 승리한 횟수
+- **Combo Score (콤보 점수)**: 연속된 승리 횟수만 카운트
+- **점수 획득**: 콤보 점수만큼 점수 획득 (승리 시)
+- **초기화 조건**:
+  - 🔄 선택 변경
+  - ❌ 패배
 
 ### 📊 점수 계산 예시
 ```
-게임1: 바위(승) → 1점 (연속 점수 1, 패배 점수 0)
-게임2: 바위(승) → 2점 (연속 점수 2, 패배 점수 0) 
-게임3: 바위(무) → 0점 (연속 점수 3 증가, 점수 획득 없음)
-게임4: 바위(승) → 4점 (연속 점수 4, 패배 점수 0)
-게임5: 바위(패) → 0점 (연속 점수 초기화, 패배 점수 1)
-게임6: 가위(승) → 1점 (새 연속 점수 1, 패배 점수 초기화)
-게임7: 가위(무) → 0점 (연속 점수 2 증가, 점수 획득 없음)
-게임8: 가위(승) → 3점 (연속 점수 3, 패배 점수 0)
+게임1: 바위(승) → 1점 (Combo: 1)
+게임2: 바위(승) → 2점 (Combo: 2)
+게임3: 바위(무) → 0점 (Streak 유지, Combo 유지)
+게임4: 바위(승) → 3점 (Combo: 3)
+게임5: 바위(패) → 0점 (초기화)
+게임6: 가위(승) → 1점 (새 Combo: 1)
 
-총 플레이어 점수: 1 + 2 + 0 + 4 + 0 + 1 + 0 + 3 = 11점
+총점: 1 + 2 + 0 + 3 + 0 + 1 = 7점
 ```
 
-### 🎯 전략 포인트
-- **무승부 활용**: 무승부로 연속 점수를 쌓아 다음 승리 시 더 높은 점수 획득
-- **위험도 관리**: 높은 연속 점수일 때 패배하면 모든 누적이 사라짐  
-- **선택 전환**: 패배 후 다른 선택으로 전환하여 새로운 연속 시작
+자세한 게임 규칙은 [게임 문서](docs/game/DISPLAY_STANDARD.md)를 참고하세요.
 
-### 🎮 게임 모드
-- **PvE (Player vs Environment)**: 컴퓨터와 대전 🔄 라운드 시스템으로 업데이트 중
-- **PvP (Player vs Player)**: 다른 플레이어와 대전 🚧 개발 예정
+---
 
 ## 🎮 주요 기능
 
-### ✅ 완료된 기능
-- **🎯 PvE 게임 모드**: 컴퓨터와 대전
-- **🔐 완전한 사용자 인증**: JWT 기반 로그인/회원가입
-- **📊 개인 통계 시스템**: 승률, 게임 기록 추적
-- **💾 데이터베이스 연동**: SQLite3 기반 사용자/게임 데이터 저장
-- **🎨 반응형 UI**: 모달 기반 인증 인터페이스
-- **📱 모바일 지원**: 완전 반응형 디자인
+### ✅ 구현된 기능
 
-### 🏗️ 프로젝트 구조
+#### 게임 시스템
+- 🃏 **덱 기반 게임**: 10개 선택을 미리 구성하여 배치 플레이
+- 🎯 **PvE 모드**: 컴퓨터와 대전
+- ⚡ **배치 실행**: 10게임 자동 일괄 처리
+- 🔥 **콤보 시스템**: 연속 승리 점수 시스템
+- 📊 **실시간 통계**: 라운드 결과 및 개인 통계
+
+#### 사용자 시스템
+- 🔐 **완전한 인증**: JWT 기반 로그인/회원가입
+- 👤 **개인 통계**: 승률, 게임 기록 추적
+- 🎮 **게스트 플레이**: 로그인 없이도 게임 가능
+- 🏆 **업적 시스템**: 다양한 업적 달성
+
+#### 기술 특징
+- 🏗️ **3계층 아키텍처**: Repository-Service-Controller 패턴
+- 💾 **MySQL 데이터베이스**: Connection Pool 기반
+- 🔒 **싱글톤 패턴**: Database 연결 관리
+- 📱 **완전 반응형**: 모바일/데스크톱 지원
+- 🎨 **모달 UI**: 우아한 사용자 인터페이스
+
+### 🚧 개발 예정
+- 👥 **PvP 모드**: 실시간 플레이어 대전 (WebSocket)
+- 🏆 **리더보드**: 전체 사용자 순위
+- 🎨 **테마**: 다크 모드, 커스텀 테마
+
+---
+
+## 🏗️ 아키텍처
+
+### 3계층 아키텍처
+
 ```
-RPS/
-├── package.json          # 프로젝트 설정 및 의존성
-├── app.js               # Express 서버 + 인증 API
-├── database.js          # SQLite 데이터베이스 관리
-├── auth.js              # JWT 인증 서비스
-├── game.db              # SQLite 데이터베이스 (자동 생성)
-├── .gitignore           # Git 제외 파일 설정
-├── public/              # 정적 파일들
-│   ├── index.html       # 메인 HTML + 인증 모달
-│   ├── styles.css       # CSS 스타일링 + 모달 디자인
-│   └── script.js        # 게임 로직 + 인증 관리
-├── README.md            # 프로젝트 문서
-└── CLAUDE.md            # 개발자 가이드
+┌─────────────────────────────────┐
+│  Presentation Layer             │
+│  (Controllers & Routes)         │
+└──────────────┬──────────────────┘
+               │
+┌──────────────▼──────────────────┐
+│  Business Logic Layer           │
+│  (Services)                     │
+└──────────────┬──────────────────┘
+               │
+┌──────────────▼──────────────────┐
+│  Data Access Layer              │
+│  (Repositories)                 │
+└──────────────┬──────────────────┘
+               │
+┌──────────────▼──────────────────┐
+│  Database (MySQL Singleton)     │
+└─────────────────────────────────┘
 ```
 
-### 🎮 게임 기능
-- **🃏 덱 시스템**: 10개 선택을 미리 구성하여 배치 게임 플레이
-- **🎯 PvE 모드**: 컴퓨터와 가위바위보 대전
-- **⚡ 배치 실행**: 덱 확정 후 10게임 자동 일괄 실행
-- **🎬 애니메이션 효과**: 결과 표시 및 점수 애니메이션
-- **📝 게임 히스토리**: 누적 게임 기록 (로그인 시 영구 저장)
-- **🔧 덱 재구성**: 완전 초기화 후 새 덱 구성
-- **🎮 다시하기**: 같은 덱으로 즉시 재플레이
+자세한 아키텍처는 [아키텍처 문서](docs/architecture/ARCHITECTURE.md)를 참고하세요.
 
-### 👤 사용자 기능
-- **🔐 회원가입/로그인**: JWT 토큰 기반 인증
-- **📊 개인 통계**: 총 게임 수, 승률, 승/패/무승부 기록
-- **🎮 게스트 플레이**: 로그인 없이도 게임 가능
-- **🔒 보안**: bcrypt 비밀번호 해싱, JWT 토큰 검증
+---
 
-### 🔧 기술 스택
-- **Backend**: Node.js, Express.js, SQLite3, JWT, bcrypt
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript
-- **Database**: SQLite3 (users, game_history 테이블)
-- **Authentication**: JWT Bearer Token
+## 🚀 실행 방법
 
-### 🚀 실행 방법
+### 사전 요구사항
+- Node.js 18 이상
+- MySQL 8.0 이상
+
+### 1. 저장소 클론
 ```bash
-# 의존성 설치
+git clone https://github.com/kmg1031/RPS.git
+cd RPS
+```
+
+### 2. 의존성 설치
+```bash
 npm install
+```
 
-# 서버 실행
+### 3. 환경 변수 설정
+`.env.development` 파일 생성:
+```env
+# Server
+PORT=3000
+NODE_ENV=development
+
+# Database
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=your_username
+DB_PASSWORD=your_password
+DB_NAME=rps_game
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_EXPIRES_IN=7d
+```
+
+### 4. 데이터베이스 설정
+```sql
+CREATE DATABASE rps_game CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 5. 서버 실행
+```bash
+# 개발 모드
+npm run dev
+
+# 프로덕션 모드
 npm start
+```
 
-# 브라우저에서 접속
+### 6. 브라우저에서 접속
+```
 http://localhost:3000
 ```
 
-### 📡 API 엔드포인트
+---
 
-#### 🎮 게임 API
-- `GET /`: 메인 페이지
-- `POST /api/play`: 개별 게임 플레이 (선택적 인증)
-- `POST /api/play-round`: 배치 라운드 플레이 (10게임 일괄)
+## 📡 API 문서
 
-#### 🔐 인증 API
-- `POST /api/auth/register`: 회원가입
-- `POST /api/auth/login`: 로그인
-- `GET /api/auth/me`: 사용자 정보 조회 (인증 필요)
+### 인증 API
+| Method | Endpoint | 설명 | 인증 |
+|--------|----------|------|------|
+| POST | `/api/auth/register` | 회원가입 | ❌ |
+| POST | `/api/auth/login` | 로그인 | ❌ |
+| GET | `/api/auth/me` | 사용자 정보 조회 | ✅ |
 
-#### 📊 통계 API
-- `GET /api/stats`: 개인 게임 통계 (인증 필요)
+### PVE 게임 API
+| Method | Endpoint | 설명 | 인증 |
+|--------|----------|------|------|
+| POST | `/api/pve-game/play` | PVE 게임 플레이 (덱 기반) | ✅ |
+| GET | `/api/pve-game/:gameId` | 게임 결과 조회 | ✅ |
+| GET | `/api/pve-game/history` | 게임 히스토리 | ✅ |
+| GET | `/api/pve-game/stats` | 사용자 통계 | ✅ |
 
-#### 요청/응답 예시
-```javascript
-// 배치 라운드 플레이
-POST /api/play-round
-Request: { "playerDeck": ["rock", "paper", "scissors", ...] }
-Response: { 
-  "success": true,
-  "roundResult": "win",
-  "playerScore": 15,
-  "computerScore": 8,
-  "gameResults": [...],
-  "saved": true 
-}
+### 연승제 게임 API
+| Method | Endpoint | 설명 | 인증 |
+|--------|----------|------|------|
+| POST | `/api/streak-game/start` | 게임 시작 | ✅ |
+| POST | `/api/streak-game/play` | 라운드 플레이 | ✅ |
+| POST | `/api/streak-game/quit` | 게임 포기 | ✅ |
+| GET | `/api/streak-game/current` | 현재 게임 조회 | ✅ |
+| GET | `/api/streak-game/history` | 게임 히스토리 | ✅ |
+| GET | `/api/streak-game/stats` | 사용자 통계 | ✅ |
 
-// 로그인
-POST /api/auth/login
-Request: { "username": "player1", "password": "password123" }
-Response: { 
-  "success": true,
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": { "id": 1, "username": "player1" }
-}
+### 업적 API
+| Method | Endpoint | 설명 | 인증 |
+|--------|----------|------|------|
+| GET | `/api/achievements/user` | 사용자 업적 목록 | ✅ |
+| GET | `/api/achievements/stats` | 업적 통계 | ✅ |
+| GET | `/api/achievements/all` | 전체 업적 목록 | ❌ |
+
+상세한 API 명세는 [API 문서](docs/api/API.md)를 참고하세요.
+
+---
+
+## 📁 프로젝트 구조
+
+```
+RPS/
+├── app.js                      # 애플리케이션 진입점 (DI 설정)
+├── database.js                 # Database 싱글톤
+├── ecosystem.config.js         # PM2 설정
+│
+├── repositories/               # Repository 레이어 (Data Access)
+│   ├── UserRepository.js
+│   ├── StreakGameRepository.js
+│   ├── PVEGameRepository.js
+│   └── AchievementRepository.js
+│
+├── services/                   # Service 레이어 (Business Logic)
+│   ├── UserService.js
+│   ├── StreakGameService.js
+│   ├── PVEGameService.js
+│   └── AchievementService.js
+│
+├── controllers/                # Controller 레이어 (Presentation)
+│   ├── AuthController.js
+│   ├── StreakGameController.js
+│   ├── PVEGameController.js
+│   └── AchievementController.js
+│
+├── routes/                     # 라우터
+│   ├── auth.routes.js
+│   ├── streak-game.routes.js
+│   ├── pve-game.routes.js
+│   └── achievement.routes.js
+│
+├── public/                     # 프론트엔드
+│   ├── index.html
+│   ├── script.js
+│   └── styles.css
+│
+├── config/                     # 설정 파일
+│   └── database.config.js
+│
+├── migrations/                 # 데이터베이스 마이그레이션
+│
+└── docs/                       # 문서
+    ├── architecture/           # 아키텍처 문서
+    ├── api/                    # API 문서
+    ├── game/                   # 게임 규칙 문서
+    └── database/               # 데이터베이스 문서
 ```
 
-### 🚧 향후 구현 예정
-- **👥 PvP 모드**: 실시간 플레이어 대전 (WebSocket)
-- **🏆 리더보드**: 전체 사용자 순위
-- **👥 친구 시스템**: 친구 추가 및 대전 초대
-- **🎨 테마**: 다크 모드, 커스텀 테마
+---
 
-### 🔄 게임 플레이 흐름
-1. **로그인 선택**: 로그인하거나 게스트로 플레이
-2. **덱 구성**: 10개의 가위/바위/보 선택을 미리 구성
-3. **게임 시작**: 덱 확정 시 10게임 자동 일괄 실행
-4. **서버 처리**: 배치로 컴퓨터 선택 생성 및 승패 판정
-5. **결과 표시**: 라운드 결과 및 상세 통계 표시
-6. **기록 저장**: 로그인 사용자는 자동으로 DB에 저장
-7. **다음 액션 선택**: 덱 재구성 또는 다시하기 선택
+## 🔧 기술 스택
 
-### 💡 주요 특징
-- **🃏 덱 기반 게임**: 전략적 선택 구성 후 배치 실행
-- **🔒 보안 우선**: 모든 게임 로직이 서버에서 처리
-- **🎮 선택적 로그인**: 게스트도 게임 플레이 가능
-- **📱 모바일 친화적**: 완전 반응형 디자인
-- **⚡ 배치 처리**: 10게임 동시 처리로 빠른 결과
-- **💾 누적 기록**: 게임 기록 보존 및 연속 플레이 지원
-- **🎨 통일된 UI**: 결과 구분 없는 일관된 사용자 경험
+### Backend
+- **Runtime**: Node.js 18+
+- **Framework**: Express.js 4.18
+- **Database**: MySQL 8.0+ (with Connection Pool)
+- **ORM**: 없음 (직접 SQL 사용)
+- **Authentication**: JWT + bcrypt
+- **Validation**: express-validator
 
-### 🔧 개발자 정보
-- **언어**: JavaScript (Node.js)
-- **프레임워크**: Express.js
-- **데이터베이스**: SQLite3
-- **인증**: JWT + bcrypt
-- **프론트엔드**: Vanilla JavaScript (프레임워크 없음)
+### Frontend
+- **HTML5**: 시맨틱 마크업
+- **CSS3**: 반응형 디자인, 모달 UI
+- **JavaScript**: Vanilla JS (프레임워크 없음)
+
+### Architecture
+- **Pattern**: 3-Tier Architecture (Repository-Service-Controller)
+- **Database Pattern**: Singleton Pattern
+- **API Style**: RESTful API
+
+---
+
+## 📚 개발 문서
+
+### 문서 구조
+- [ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) - 3계층 아키텍처 상세 설명
+- [API.md](docs/api/API.md) - API 명세서
+- [DATABASE.md](docs/database/DATABASE.md) - 데이터베이스 스키마 및 설계
+- [DATA_MODELS.md](docs/DATA_MODELS.md) - 데이터 모델 및 타입 정의 ⭐
+- [ACHIEVEMENTS.md](docs/game/ACHIEVEMENTS.md) - 업적 시스템
+- [DISPLAY_STANDARD.md](docs/game/DISPLAY_STANDARD.md) - 게임 UI 표준
+- [FEATURES.md](docs/FEATURES.md) - 기능 명세
+- [CLAUDE.md](docs/CLAUDE.md) - Claude Code 개발 가이드
+
+---
+
+## 🔄 게임 플레이 흐름
+
+```
+1. 🔑 로그인 또는 게스트 플레이
+   ↓
+2. 🃏 덱 구성 (10개 선택)
+   ↓
+3. 🎮 게임 시작 (10게임 일괄 실행)
+   ↓
+4. ⚡ 서버 처리 (점수 계산, 승패 판정)
+   ↓
+5. 📊 결과 표시 (라운드 결과, 통계)
+   ↓
+6. 💾 기록 저장 (로그인 사용자만)
+   ↓
+7. 🔄 다시하기 또는 덱 재구성
+```
+
+---
+
+## 💡 주요 설계 결정
+
+### 1. 3계층 아키텍처 선택
+**이유**: 관심사 분리, 테스트 용이성, 유지보수성 향상
+
+### 2. MySQL + Singleton 패턴
+**이유**: Connection Pool 효율적 관리, 확장성
+
+### 3. GameLogic 분리
+**이유**: 순수 게임 규칙을 DB와 독립적으로 관리
+
+### 4. 덱 기반 게임
+**이유**: 전략적 게임 플레이, 빠른 결과 처리
+
+---
+
+## 🤝 기여하기
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📝 라이선스
+
+This project is licensed under the ISC License.
+
+---
+
+## 👤 작성자
+
+**GitHub**: [@kmg1031](https://github.com/kmg1031)
+
+---
+
+## 🙏 감사의 말
+
+- Claude Code를 사용하여 개발되었습니다.
+- Express.js 커뮤니티
+- Node.js 커뮤니티
+
+---
+
+**마지막 업데이트**: 2025-11-20
+**버전**: v2.1 (레거시 코드 정리 완료)
