@@ -18,7 +18,9 @@
       "Bash(npx pm2 start:*)",
       "Bash(npx pm2:*)",
       "Bash(timeout 3 npx pm2 logs --lines 10 --nostream)",
-      "Bash(exit 0)"
+      "Bash(exit 0)",
+      "Bash(node app.restful.js)",
+      "Bash(cat:*)"
     ],
     "deny": [
       "Read(../.env)",

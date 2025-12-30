@@ -3,9 +3,56 @@ const now = new Date();
 const logDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
 
 module.exports = {
-  apps: [{
-    name: 'rps-game',
-    script: './app.js',
+  apps: [
+    // RESTful API 서버 (권장)
+    {
+      name: 'rps-restful',
+      script: './app.restful.js',
+
+      // 개발 환경 설정
+      watch: true,
+      watch_delay: 1000,
+      ignore_watch: [
+        'node_modules',
+        'logs',
+        '*.log',
+        '.git',
+        'public'
+      ],
+
+      // 환경 변수
+      env_development: {
+        NODE_ENV: 'development',
+        PORT: 3000
+      },
+      env_production: {
+        NODE_ENV: 'production',
+        PORT: 3000
+      },
+
+      // 로그 설정 - 날짜별 로그 파일
+      error_file: `./logs/${logDate}-restful-error.log`,
+      out_file: `./logs/${logDate}-restful-out.log`,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+
+      // 프로세스 관리
+      instances: 1,
+      exec_mode: 'fork',
+
+      // 자동 재시작 설정
+      autorestart: true,
+      max_restarts: 10,
+      min_uptime: '10s',
+      max_memory_restart: '500M',
+
+      // 에러 발생 시 재시작 대기 시간
+      restart_delay: 4000
+    },
+    // 레거시 API 서버 (호환성 유지용)
+    {
+      name: 'rps-legacy',
+      script: './app.js',
 
     // 개발 환경 설정
     watch: true,
@@ -54,5 +101,6 @@ module.exports = {
 
     // 에러 발생 시 재시작 대기 시간
     restart_delay: 4000
-  }]
+    }
+  ]
 };

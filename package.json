@@ -4,7 +4,10 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "pm2 start ecosystem.config.js",
+    "start:restful": "node app.restful.js",
+    "dev": "pm2 start ecosystem.config.js --only rps-restful",
+    "dev:legacy": "pm2 start ecosystem.config.js --only rps-legacy",
+    "dev:all": "pm2 start ecosystem.config.js",
     "dev:stop": "pm2 stop ecosystem.config.js",
     "dev:restart": "pm2 restart ecosystem.config.js",
     "dev:delete": "pm2 delete ecosystem.config.js",

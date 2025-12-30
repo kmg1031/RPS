@@ -2623,3 +2623,466 @@ header h1 {
         font-size: 1.2rem;
     }
 }
+
+
+/* 묵찌빠 게임 스타일 */
+.mukjjipa-game-area {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* 묵찌빠 메인 화면 */
+.mukjjipa-main {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.mukjjipa-main h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.game-description {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 30px 0;
+    text-align: left;
+}
+
+.game-description p {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.game-description ul {
+    list-style: none;
+    padding: 0;
+}
+
+.game-description li {
+    font-size: 1.1rem;
+    padding: 10px 15px;
+    margin: 8px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #fbbf24;
+}
+
+.mukjjipa-stats-preview {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 30px 0;
+}
+
+.stat-preview {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 20px 30px;
+    border-radius: 15px;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.stat-preview .stat-label {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.stat-preview .stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.primary-btn.large {
+    padding: 20px 50px;
+    font-size: 1.4rem;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+    margin-top: 20px;
+}
+
+.primary-btn.large:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(40, 167, 69, 0.5);
+}
+
+.mukjjipa-game-options {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 30px;
+}
+
+.mukjjipa-choice-step {
+    text-align: center;
+}
+
+.mukjjipa-choice-step h3 {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.mukjjipa-choice-step p {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    margin-bottom: 30px;
+}
+
+.selected-choice-display {
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.selected-choice-display .choice-label {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.selected-choice-display .choice-value {
+    font-size: 1.5rem;
+    color: #10b981;
+}
+
+.mukjjipa-selected-summary {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.mukjjipa-selected-summary .selected-choice {
+    flex: 1;
+    max-width: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+}
+
+.mukjjipa-selected-summary .choice-label {
+    display: block;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    margin-bottom: 10px;
+}
+
+.mukjjipa-selected-summary .choice-value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.mukjjipa-setup {
+    margin: 30px 0;
+}
+
+.mukjjipa-choice-selection {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.mukjjipa-setup-btn {
+    flex: 1;
+    max-width: 150px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 3px solid transparent;
+    border-radius: 15px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.mukjjipa-setup-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+}
+
+.mukjjipa-setup-btn.selected {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.2);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.mukjjipa-selected-choices {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.selected-choice {
+    flex: 1;
+    max-width: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+}
+
+.choice-label {
+    display: block;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    margin-bottom: 10px;
+}
+
+.choice-value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.mukjjipa-game-play {
+    padding: 20px;
+}
+
+.mukjjipa-stats {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.mukjjipa-phase-indicator {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.phase-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.phase-timer {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.phase-timer .timer-fill {
+    height: 100%;
+    background: #10b981;
+    transition: width 0.1s linear;
+}
+
+.mukjjipa-choices-display {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    justify-content: center;
+    margin: 40px 0;
+}
+
+.mukjjipa-side {
+    flex: 1;
+    max-width: 300px;
+}
+
+.mukjjipa-side h4 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.choices-container {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.choice-card {
+    flex: 1;
+    max-width: 120px;
+    aspect-ratio: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+.choice-card.hidden .choice-icon {
+    font-size: 3rem;
+}
+
+.choice-card:not(.hidden):hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.choice-card:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.choice-card.not-selected {
+    opacity: 0.3;
+    transform: scale(0.9);
+}
+
+.choice-card .choice-icon {
+    font-size: 2.5rem;
+}
+
+.choice-card .choice-name {
+    font-size: 0.9rem;
+}
+
+.mukjjipa-vs {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #f59e0b;
+}
+
+.final-choice {
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.final-choice .choice-icon {
+    font-size: 4rem;
+}
+
+.final-choice .choice-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.mukjjipa-result {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.mukjjipa-result .result-text {
+    font-size: 2rem;
+    font-weight: bold;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.mukjjipa-result .result-text.win {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.2);
+}
+
+.mukjjipa-result .result-text.lose {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.mukjjipa-result .result-text.draw {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.2);
+}
+
+.mukjjipa-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.mukjjipa-game-result {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.mukjjipa-game-result h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 768px) {
+    .mukjjipa-main {
+        padding: 25px;
+    }
+
+    .mukjjipa-main h2 {
+        font-size: 2rem;
+    }
+
+    .game-description p {
+        font-size: 1.1rem;
+    }
+
+    .game-description li {
+        font-size: 1rem;
+        padding: 8px 12px;
+    }
+
+    .mukjjipa-stats-preview {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .stat-preview {
+        min-width: 100%;
+    }
+
+    .stat-preview .stat-value {
+        font-size: 2rem;
+    }
+
+    .primary-btn.large {
+        padding: 15px 35px;
+        font-size: 1.2rem;
+    }
+
+    .mukjjipa-choices-display {
+        flex-direction: column;
+    }
+
+    .mukjjipa-vs {
+        transform: rotate(90deg);
+        margin: 20px 0;
+    }
+
+    .mukjjipa-choice-selection {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .mukjjipa-setup-btn {
+        max-width: 200px;
+        width: 100%;
+    }
+}
