@@ -2545,9 +2545,9 @@ header h1 {
 }
 
 .secondary-btn {
-    background: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(45deg, #dc3545, #c82333);
     color: white;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 2px solid #dc3545;
     padding: 12px 30px;
     border-radius: 12px;
     font-size: 1rem;
@@ -2557,8 +2557,8 @@ header h1 {
 }
 
 .secondary-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.6);
+    background: linear-gradient(45deg, #c82333, #bd2130);
+    border-color: #bd2130;
     transform: translateY(-2px);
 }
 
@@ -2774,6 +2774,10 @@ header h1 {
     padding: 30px;
 }
 
+.mukjjipa-setup-timer {
+    margin-bottom: 20px;
+}
+
 .mukjjipa-choice-step {
     text-align: center;
 }
@@ -2864,6 +2868,10 @@ header h1 {
     flex-direction: column;
     align-items: center;
     gap: 10px;
+}
+
+.mukjjipa-setup-btn .icon {
+    font-size: 2.5rem;
 }
 
 .mukjjipa-setup-btn:hover {

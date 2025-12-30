@@ -13,6 +13,7 @@ class MukjjipaGame {
         this.maxStreak = 0;
         this.totalScore = 0;
         this.roundCount = 0;
+        this.winCount = 0; // 승리 횟수 (타이머 속도 조절용)
 
         this.phase = 'main'; // main, setup, waiting, player-turn, result
         this.phaseTimer = null;
@@ -283,24 +284,22 @@ class MukjjipaGame {
         // 키보드 활성화
         this.enableKeyboard();
 
-        // 2초 타이머 시작 (1번 선택 제한 시간)
-        this.setupTimer = setTimeout(() => {
+        // 승리 횟수에 따른 동적 타이머 시작 (1번 선택 제한 시간)
+        const timerDuration = this.getTimerDuration();
+        this.startPhaseTimer(timerDuration, () => {
             if (this.playerChoices.length === 0) {
                 // 시간 초과 시 랜덤 선택
                 const randomChoice = choicesToDisplay[Math.floor(Math.random() * choicesToDisplay.length)];
                 this.selectFirstChoice(randomChoice);
             }
-        }, 2000);
+        });
     }
 
     selectFirstChoice(choice) {
         this.playerChoices[0] = choice;
 
-        // 1번 선택 타이머 정리
-        if (this.setupTimer) {
-            clearTimeout(this.setupTimer);
-            this.setupTimer = null;
-        }
+        // 타이머 중지
+        this.stopPhaseTimer();
 
         // 키보드 비활성화 (전환 중)
         this.disableKeyboard();
@@ -351,14 +350,15 @@ class MukjjipaGame {
         // 키보드 재활성화
         this.enableKeyboard();
 
-        // 2초 타이머 시작 (2번 선택 제한 시간)
-        this.setupTimer = setTimeout(() => {
+        // 승리 횟수에 따른 동적 타이머 시작 (2번 선택 제한 시간)
+        const timerDuration = this.getTimerDuration();
+        this.startPhaseTimer(timerDuration, () => {
             if (this.playerChoices.length === 1) {
                 // 시간 초과 시 랜덤 선택
                 const randomChoice = choicesToDisplay[Math.floor(Math.random() * choicesToDisplay.length)];
                 this.selectSecondChoice(randomChoice);
             }
-        }, 2000);
+        });
     }
 
     shuffleArray(array) {
@@ -370,14 +370,21 @@ class MukjjipaGame {
         return shuffled;
     }
 
+    // 승리 횟수에 따른 타이머 시간 계산 (지수 감소)
+    getTimerDuration() {
+        const baseTime = 2000; // 2초
+        const minTime = 100; // 최소 0.1초
+        const decayRate = 0.805; // 지수 감소율 (15승에서 최소값 도달)
+
+        const timer = Math.max(minTime, baseTime * Math.pow(decayRate, this.winCount));
+        return Math.floor(timer);
+    }
+
     selectSecondChoice(choice) {
         this.playerChoices[1] = choice;
 
-        // 2번 선택 타이머 정리
-        if (this.setupTimer) {
-            clearTimeout(this.setupTimer);
-            this.setupTimer = null;
-        }
+        // 타이머 중지
+        this.stopPhaseTimer();
 
         // 키보드 비활성화
         this.disableKeyboard();
@@ -502,16 +509,19 @@ class MukjjipaGame {
 
         if (result === 'win') {
             this.currentStreak++;
+            this.winCount++; // 승리 카운터 증가 (타이머 속도 증가)
             this.maxStreak = Math.max(this.maxStreak, this.currentStreak);
             this.totalScore += this.currentStreak;
             this.showRoundResult('승리!', 'win');
         } else if (result === 'lose') {
             this.currentStreak = 0;
+            this.winCount = 0; // 승리 카운터 리셋 (타이머 속도 초기화)
             this.showRoundResult('패배!', 'lose');
             // 패배 시 게임 종료
-            setTimeout(() => this.showFinalResult(), 2000);
+            this.showFinalResult();
             return;
         } else {
+            // 무승부일 때는 winCount를 변경하지 않음 (속도 유지)
             this.showRoundResult('무승부!', 'draw');
         }
 
@@ -558,7 +568,7 @@ class MukjjipaGame {
         this.currentStreak = 0;
         this.showRoundResult('시간 초과! 패배!', 'lose');
 
-        setTimeout(() => this.showFinalResult(), 2000);
+        this.showFinalResult();
     }
 
     quitGame() {
