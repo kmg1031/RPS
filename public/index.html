@@ -11,14 +11,6 @@
         <header>
             <h1>🎯 가위바위보 게임</h1>
             <div class="header-controls">
-                <div class="header-actions">
-                    <button id="achievements-btn" class="header-btn" style="display: none;">
-                        <span class="icon">🏆</span>
-                        <span>업적</span>
-                        <span class="notification-badge" id="achievement-badge" style="display: none;"></span>
-                    </button>
-                </div>
-
                 <div class="auth-menu">
                     <div id="user-info" class="user-info" style="display: none;">
                         <div class="user-details">
@@ -52,6 +44,23 @@
                         <span class="stat-value" id="mukjjipa-total-score-preview">0</span>
                     </div>
                 </div>
+
+                <div class="mukjjipa-game-options-menu">
+                    <h3>게임 옵션</h3>
+                    <div class="option-item">
+                        <label class="option-label">
+                            <input type="checkbox" id="mukjjipa-random-order" class="option-checkbox">
+                            <span>쉬운 선택</span>
+                        </label>
+                    </div>
+                    <div class="option-item">
+                        <label class="option-label">
+                            <input type="checkbox" id="mukjjipa-quick-game" class="option-checkbox">
+                            <span>천천히</span>
+                        </label>
+                    </div>
+                </div>
+
                 <button id="start-mukjjipa-main" class="primary-btn large">게임 시작</button>
             </div>
 
@@ -260,10 +269,6 @@
             </div>
         </div>
 
-        <div class="game-history">
-            <h3>라운드 기록</h3>
-            <div id="history-list"></div>
-        </div>
     </div>
 
     <!-- 로그인 모달 -->

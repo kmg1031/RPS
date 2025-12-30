@@ -32,10 +32,19 @@ class MukjjipaGame {
 
         this.keyboardEnabled = false; // 키보드 네비게이션 활성화 여부
 
+        // 게임 옵션
+        this.options = {
+            randomOrder: false, // 무작위 선택 순서
+            quickGame: false    // 빠른 게임 (승리/무승부 시 즉시 다음 라운드)
+        };
+
         this.bindEvents();
 
         // 초기 키보드 활성화 (메인 화면에서 시작)
         this.enableKeyboard();
+
+        // 옵션 로드
+        this.loadOptions();
     }
 
     bindEvents() {
@@ -63,8 +72,51 @@ class MukjjipaGame {
             newGameBtn.addEventListener('click', () => this.showMain());
         }
 
+        // 옵션 체크박스 이벤트
+        const randomOrderCheckbox = document.getElementById('mukjjipa-random-order');
+        if (randomOrderCheckbox) {
+            randomOrderCheckbox.addEventListener('change', (e) => {
+                this.options.randomOrder = e.target.checked;
+                this.saveOptions();
+            });
+        }
+
+        const quickGameCheckbox = document.getElementById('mukjjipa-quick-game');
+        if (quickGameCheckbox) {
+            quickGameCheckbox.addEventListener('change', (e) => {
+                this.options.quickGame = e.target.checked;
+                this.saveOptions();
+            });
+        }
+
         // 키보드 이벤트 리스너
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+    }
+
+    loadOptions() {
+        try {
+            const saved = localStorage.getItem('mukjjipa-options');
+            if (saved) {
+                this.options = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.error('Failed to load options:', e);
+        }
+
+        // 체크박스 상태 복원
+        const randomOrderCheckbox = document.getElementById('mukjjipa-random-order');
+        if (randomOrderCheckbox) randomOrderCheckbox.checked = this.options.randomOrder;
+
+        const quickGameCheckbox = document.getElementById('mukjjipa-quick-game');
+        if (quickGameCheckbox) quickGameCheckbox.checked = this.options.quickGame;
+    }
+
+    saveOptions() {
+        try {
+            localStorage.setItem('mukjjipa-options', JSON.stringify(this.options));
+        } catch (e) {
+            console.error('Failed to save options:', e);
+        }
     }
 
     handleKeyboard(e) {
@@ -204,10 +256,22 @@ class MukjjipaGame {
         document.getElementById('mukjjipa-choice-step-1').style.display = 'block';
         document.getElementById('mukjjipa-choice-step-2').style.display = 'none';
 
-        // 1번 선택 버튼 활성화
-        document.querySelectorAll('.mukjjipa-setup-btn[data-step="1"]').forEach(btn => {
-            btn.disabled = false;
-        });
+        // 선택지 배열 준비 (쉬운 선택 옵션: 체크하지 않으면 무작위)
+        let choicesToDisplay = [...this.choices];
+        if (!this.options.randomOrder) {
+            choicesToDisplay = this.shuffleArray(choicesToDisplay);
+        }
+
+        // 1번 선택 버튼 동적 생성
+        const step1Container = document.querySelector('#mukjjipa-choice-step-1 .mukjjipa-choice-selection');
+        if (step1Container) {
+            step1Container.innerHTML = choicesToDisplay.map(choice => `
+                <button class="mukjjipa-setup-btn" data-choice="${choice}" data-step="1">
+                    <span class="icon">${this.choiceEmojis[choice]}</span>
+                    <span>${this.choiceNames[choice]}</span>
+                </button>
+            `).join('');
+        }
 
         // 1번 선택 이벤트 바인딩
         this.bindChoiceButtons(1);
@@ -218,10 +282,25 @@ class MukjjipaGame {
 
         // 키보드 활성화
         this.enableKeyboard();
+
+        // 2초 타이머 시작 (1번 선택 제한 시간)
+        this.setupTimer = setTimeout(() => {
+            if (this.playerChoices.length === 0) {
+                // 시간 초과 시 랜덤 선택
+                const randomChoice = choicesToDisplay[Math.floor(Math.random() * choicesToDisplay.length)];
+                this.selectFirstChoice(randomChoice);
+            }
+        }, 2000);
     }
 
     selectFirstChoice(choice) {
         this.playerChoices[0] = choice;
+
+        // 1번 선택 타이머 정리
+        if (this.setupTimer) {
+            clearTimeout(this.setupTimer);
+            this.setupTimer = null;
+        }
 
         // 키보드 비활성화 (전환 중)
         this.disableKeyboard();
@@ -246,10 +325,16 @@ class MukjjipaGame {
         document.getElementById('mukjjipa-choice-step-1').style.display = 'none';
         document.getElementById('mukjjipa-choice-step-2').style.display = 'block';
 
+        // 선택지 배열 준비 (쉬운 선택 옵션: 체크하지 않으면 무작위)
+        let choicesToDisplay = [...this.choices];
+        if (!this.options.randomOrder) {
+            choicesToDisplay = this.shuffleArray(choicesToDisplay);
+        }
+
         // 3가지 선택지 모두 생성
         const step2Container = document.querySelector('#mukjjipa-choice-step-2 .mukjjipa-choice-selection');
         if (step2Container) {
-            step2Container.innerHTML = this.choices.map(choice => `
+            step2Container.innerHTML = choicesToDisplay.map(choice => `
                 <button class="mukjjipa-setup-btn" data-choice="${choice}" data-step="2">
                     <span class="icon">${this.choiceEmojis[choice]}</span>
                     <span>${this.choiceNames[choice]}</span>
@@ -265,10 +350,34 @@ class MukjjipaGame {
 
         // 키보드 재활성화
         this.enableKeyboard();
+
+        // 2초 타이머 시작 (2번 선택 제한 시간)
+        this.setupTimer = setTimeout(() => {
+            if (this.playerChoices.length === 1) {
+                // 시간 초과 시 랜덤 선택
+                const randomChoice = choicesToDisplay[Math.floor(Math.random() * choicesToDisplay.length)];
+                this.selectSecondChoice(randomChoice);
+            }
+        }, 2000);
+    }
+
+    shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
     }
 
     selectSecondChoice(choice) {
         this.playerChoices[1] = choice;
+
+        // 2번 선택 타이머 정리
+        if (this.setupTimer) {
+            clearTimeout(this.setupTimer);
+            this.setupTimer = null;
+        }
 
         // 키보드 비활성화
         this.disableKeyboard();
@@ -382,10 +491,8 @@ class MukjjipaGame {
         this.disablePlayerChoiceButtons();
         this.revealPlayerChoice(choice);
 
-        // 승부 판정
-        setTimeout(() => {
-            this.judgeRound();
-        }, 500);
+        // 즉시 승부 판정
+        this.judgeRound();
     }
 
     judgeRound() {
@@ -410,14 +517,19 @@ class MukjjipaGame {
 
         this.updateStats();
 
-        // 라운드 결과 phase로 전환
-        this.phase = 'round-result';
+        // 천천히 옵션: 체크하지 않으면 빠른 게임 (즉시 다음 라운드)
+        if (!this.options.quickGame) {
+            this.nextRound();
+        } else {
+            // 라운드 결과 phase로 전환
+            this.phase = 'round-result';
 
-        // 다음 라운드 버튼 표시
-        document.getElementById('mukjjipa-next-round').style.display = 'block';
+            // 다음 라운드 버튼 표시
+            document.getElementById('mukjjipa-next-round').style.display = 'block';
 
-        // 키보드 활성화 (아래 방향키로 다음 라운드)
-        this.enableKeyboard();
+            // 키보드 활성화 (아래 방향키로 다음 라운드)
+            this.enableKeyboard();
+        }
     }
 
     determineWinner(player, computer) {
